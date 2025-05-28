@@ -25,10 +25,7 @@
         *   [Properties](#properties-plwindow)
         *   [Constructor](#constructor-plwindow)
         *   [Methods](#methods-plwindow)
-5.  [Example Usage](#example-usage)
-    *   [Basic Menu Setup](#basic-menu-setup)
-    *   [Using Sub-Sections](#using-sub-sections)
-    *   [Customizing Styles](#customizing-styles)
+5.  [Example Usage]([#example-usage](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI/tree/main?tab=readme-ov-file#5-example-usage))
 6.  [Tips & Best Practices](#tips--best-practices)
 7.  [Troubleshooting](#troubleshooting)
 
