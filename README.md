@@ -1,5 +1,4 @@
-# Meowijuana Button API: Documentation
-**Compatibility:** Unity Games (IL2CPP & Mono)
+# P.L.WARE Button API: Documentation
 
 ## Table of Contents
 
@@ -10,22 +9,22 @@
     *   [For IL2CPP Games](#for-il2cpp-games)
     *   [For Mono Games](#for-mono-games)
 4.  [API Reference](#api-reference)
-    *   [Namespace: `Meowijuana_ButtonAPI.Meowzers`](#namespace-meowijuana_buttonapimeowzers)
-    *   [Class: `Logic`](#class-logic)
+    *   [Namespace: `PLWARE_ButtonAPI.Controls`](#namespace-plware_buttonapicontrols)
+    *   [Class: `PLButtonAPI`](#class-plbuttonapi)
         *   [Buttons](#buttons)
         *   [Toggles](#toggles)
         *   [Sliders](#sliders)
         *   [Text Fields / Text Areas](#text-fields--text-areas)
         *   [Labels](#labels)
         *   [Sub-Sections](#sub-sections)
-    *   [Class: `Watermark`](#class-watermark)
-        *   [Properties](#properties-watermark)
-        *   [Constructor](#constructor-watermark)
-        *   [Methods](#methods-watermark)
-    *   [Class: `Window`](#class-window)
-        *   [Properties](#properties-window)
-        *   [Constructor](#constructor-window)
-        *   [Methods](#methods-window)
+    *   [Class: `PLWatermark`](#class-plwatermark)
+        *   [Properties](#properties-plwatermark)
+        *   [Constructor](#constructor-plwatermark)
+        *   [Methods](#methods-plwatermark)
+    *   [Class: `PLWindow`](#class-plwindow)
+        *   [Properties](#properties-plwindow)
+        *   [Constructor](#constructor-plwindow)
+        *   [Methods](#methods-plwindow)
 5.  [Example Usage](#example-usage)
     *   [Basic Menu Setup](#basic-menu-setup)
     *   [Using Sub-Sections](#using-sub-sections)
@@ -37,23 +36,23 @@
 
 ## 1. Introduction
 
-The Meowijuana Button API is a lightweight, easy-to-use library for creating ImGUI (Immediate Mode GUI) elements within Unity game mods. It simplifies the process of adding common UI controls like buttons, toggles, sliders, and managed windows, allowing mod developers to quickly build user interfaces for their cheats or tools. This API supports both IL2CPP and Mono-backend Unity games.
+The P.L.WARE Button API is a lightweight, easy-to-use library for creating ImGUI (Immediate Mode GUI) elements within Unity game mods. It simplifies the process of adding common UI controls like buttons, toggles, sliders, and managed windows, allowing mod developers to quickly build user interfaces for their cheats or tools. This API supports both IL2CPP and Mono-backend Unity games.
 
-This document provides a comprehensive guide on how to integrate and use the Meowijuana Button API in your projects.
+This document provides a comprehensive guide on how to integrate and use the P.L.WARE Button API in your projects.
 
 ## 2. Key Features
 
 *   **Simple API:** Intuitive methods for adding UI elements with minimal boilerplate.
 *   **Common Controls:** Buttons, toggles, float/int sliders, text fields, text areas, and labels.
-*   **Managed Windows:** Draggable and resizable windows to encapsulate your UI.
-*   **Watermark:** Customizable on-screen watermark to display cheat name, version, username, time, and FPS.
+*   **Managed Windows:** Draggable and resizable windows to encapsulate your UI (`PLWindow`).
+*   **Watermark:** Customizable on-screen watermark to display cheat name, version, username, time, and FPS (`PLWatermark`).
 *   **Sub-Sections:** Helper methods to visually group UI elements within windows.
 *   **Customizable Styles:** Supports custom `GUIStyle` and `GUILayoutOption` for all elements.
 *   **IL2CPP & Mono Support:** Designed to work seamlessly with modding frameworks for both types of Unity games.
 
 ## 3. Getting Started & Setup
 
-To use the Meowijuana Button API, you'll typically be creating a DLL (Dynamic Link Library) that gets loaded into the target Unity game by a mod loader.
+To use the P.L.WARE Button API, you'll typically be creating a DLL (Dynamic Link Library) that gets loaded into the target Unity game by a mod loader.
 
 ### Project Setup (General)
 
@@ -62,7 +61,7 @@ To use the Meowijuana Button API, you'll typically be creating a DLL (Dynamic Li
     *   Target a .NET Framework version compatible with the Unity game you're modding (e.g., .NET Framework 4.7.2, .NET Standard 2.0 for broader compatibility, especially with BepInEx).
 
 2.  **Add API Files:**
-    *   Copy the `Logic.cs`, `Watermark.cs`, and `Window.cs` files into your project.
+    *   Copy the `Controls.cs`, `PLWatermark.cs`, and `PLWindow.cs` files from the [P.L.WARE Button API GitHub repository](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI) into your project (typically into a subfolder like `ButtonAPI`).
 
 3.  **Add Unity Engine References:**
     *   You'll need to reference Unity's assemblies. These are usually found in the game's `Managed` folder (e.g., `GAME_Data/Managed/`) or within your mod loader's directories (e.g., `MelonLoader/Managed/` or `BepInEx/core/`).
@@ -107,15 +106,15 @@ Mono games use a .NET runtime (Mono) to execute C# code.
 
 ## 4. API Reference
 
-### Namespace: `Meowijuana_ButtonAPI.Meowzers`
+### Namespace: `PLWARE_ButtonAPI.Controls`
 
-All classes and methods of this API are contained within this namespace. Remember to add `using Meowijuana_ButtonAPI.Meowzers;` at the top of your C# files.
+All classes and methods of this API are contained within this namespace. Remember to add `using PLWARE_ButtonAPI.Controls;` at the top of your C# files.
 
 ---
 
-### Class: `Logic`
+### Class: `PLButtonAPI`
 
-A static class providing helper methods to create standard IMGUI controls.
+A static class (defined in `Controls.cs`) providing helper methods to create standard IMGUI controls.
 
 #### Buttons
 
@@ -212,11 +211,11 @@ Sub-sections help organize UI elements within a visually distinct group (typical
 
 ---
 
-### Class: `Watermark`
+### Class: `PLWatermark`
 
-Displays an on-screen watermark with customizable information.
+(Defined in `PLWatermark.cs`) Displays an on-screen watermark with customizable information.
 
-#### Properties (Watermark)
+#### Properties (PLWatermark)
 
 *   `public bool IsVisible { get; set; } = true;`
     *   Controls whether the watermark is rendered.
@@ -239,12 +238,12 @@ Displays an on-screen watermark with customizable information.
 *   `public float Padding { get; set; } = 5f;`
     *   Padding inside the watermark box, around the text.
 
-#### Constructor (Watermark)
+#### Constructor (PLWatermark)
 
-*   `public Watermark()`
-    *   Initializes a new Watermark instance. Sets `UserName` to "Player" by default.
+*   `public PLWatermark()`
+    *   Initializes a new `PLWatermark` instance. Sets `UserName` to "Player" by default.
 
-#### Methods (Watermark)
+#### Methods (PLWatermark)
 
 *   `public void Render()`
     *   Draws the watermark on screen if `IsVisible` is true. Call this within your `OnGUI()` method. It automatically updates FPS and time.
@@ -254,11 +253,11 @@ Displays an on-screen watermark with customizable information.
 
 ---
 
-### Class: `Window`
+### Class: `PLWindow`
 
-Represents a draggable and resizable IMGUI window.
+(Defined in `PLWindow.cs`) Represents a draggable and resizable IMGUI window.
 
-#### Properties (Window)
+#### Properties (PLWindow)
 
 *   `public Rect CurrentRect { get; private set; }`
     *   The current position and size of the window on screen. Modifiable via `SetRect()` or internally by dragging/resizing.
@@ -285,10 +284,10 @@ Represents a draggable and resizable IMGUI window.
 *   `public float MinWindowHeight { get; set; } = 150f;`
     *   Minimum height the window can be resized to.
 
-#### Constructor (Window)
+#### Constructor (PLWindow)
 
-*   `public Window(int id, string title, Rect initialRect, Action<int> drawContentDelegate, bool initialVisibility = false)`
-    *   Initializes a new `Window`.
+*   `public PLWindow(int id, string title, Rect initialRect, Action<int> drawContentDelegate, bool initialVisibility = false)`
+    *   Initializes a new `PLWindow`.
     *   **Parameters:**
         *   `id`: Unique integer ID for the window.
         *   `title`: Window title.
@@ -296,7 +295,7 @@ Represents a draggable and resizable IMGUI window.
         *   `drawContentDelegate`: The method that will draw the UI elements inside the window.
         *   `initialVisibility` (optional): Set to `true` to make the window visible immediately. Defaults to `false`.
 
-#### Methods (Window)
+#### Methods (PLWindow)
 
 *   `public void Render()`
     *   Renders the window and its content if `IsVisible` is true. Call this within your `OnGUI()` method.
@@ -316,7 +315,7 @@ This example assumes you have a class (e.g., a `MonoBehaviour` for BepInEx, or `
 
 ```csharp
 using UnityEngine;
-using Meowijuana_ButtonAPI.Meowzers; // Don't forget this!
+using PLWARE_ButtonAPI.Controls; // Don't forget this!
 using System; // For Action
 
 // If using BepInEx:
@@ -331,8 +330,8 @@ using System; // For Action
 // For a simple MonoBehaviour example:
 public class ModGUIManager : MonoBehaviour
 {
-    private Window _mainWindow;
-    private Watermark _watermark;
+    private PLWindow _mainWindow;
+    private PLWatermark _watermark;
 
     // State for UI elements
     private bool _feature1Enabled = false;
@@ -348,9 +347,9 @@ public class ModGUIManager : MonoBehaviour
         int mainWindowId = "MyMainWindow".GetHashCode();
 
         // Initialize the main window
-        _mainWindow = new Window(
+        _mainWindow = new PLWindow(
             id: mainWindowId,
-            title: "Meowijuana Mod Menu",
+            title: "P.L.WARE Mod Menu",
             initialRect: new Rect(20, 20, 400, 500), // x, y, width, height
             drawContentDelegate: DrawMainWindowContent,
             initialVisibility: false // Start hidden
@@ -361,7 +360,7 @@ public class ModGUIManager : MonoBehaviour
         _mainWindow.IsDraggable = true;
 
         // Initialize the watermark
-        _watermark = new Watermark
+        _watermark = new PLWatermark
         {
             CheatName = "My Awesome Mod",
             Version = "v1.1",
@@ -375,7 +374,7 @@ public class ModGUIManager : MonoBehaviour
         // GUIStyle customBox = new GUIStyle(GUI.skin.box);
         // customBox.normal.background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 0.8f));
         // GUIStyle customTitle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, normal = { textColor = Color.cyan }};
-        // Logic.InitializeDefaultSubSectionStyles(customBox, customTitle);
+        // PLButtonAPI.InitializeDefaultSubSectionStyles(customBox, customTitle);
     }
 
     void Update()
@@ -400,33 +399,33 @@ public class ModGUIManager : MonoBehaviour
         _mainWindow.Render();
     }
 
-    // This method will be called by the Window class to draw its content
+    // This method will be called by the PLWindow class to draw its content
     void DrawMainWindowContent(int windowId)
     {
         // You can use GUILayout for automatic layouting
-        GUILayout.Label("Welcome to the Meowijuana Mod Menu!");
+        GUILayout.Label("Welcome to the P.L.WARE Mod Menu!");
         GUILayout.Space(10);
 
         // --- Section 1: Player Cheats ---
-        Logic.BeginSubSection("Player Cheats"); // Using default styles for subsection
+        PLButtonAPI.BeginSubSection("Player Cheats"); // Using default styles for subsection
 
-        if (Logic.AddToggle("Enable God Mode", ref _feature1Enabled))
+        if (PLButtonAPI.AddToggle("Enable God Mode", ref _feature1Enabled))
         {
             Debug.Log("God Mode Toggled: " + _feature1Enabled);
             // Add your god mode logic here
         }
 
-        Logic.AddSlider("Movement Speed", ref _speedValue, 5f, 50f);
-        // Logic.AddSlider("Item Count", ref _itemCount, 1, 100, showValue: true); // ShowValue is true by default
+        PLButtonAPI.AddSlider("Movement Speed", ref _speedValue, 5f, 50f);
+        // PLButtonAPI.AddSlider("Item Count", ref _itemCount, 1, 100, showValue: true); // ShowValue is true by default
 
-        Logic.AddTextField("Player Name:", ref _playerName);
+        PLButtonAPI.AddTextField("Player Name:", ref _playerName);
 
-        if (Logic.AddButton("Reset Player Name", () => { _playerName = "DefaultPlayer"; }))
+        if (PLButtonAPI.AddButton("Reset Player Name", () => { _playerName = "DefaultPlayer"; }))
         {
             Debug.Log("Player name reset!");
         }
 
-        Logic.EndSubSection();
+        PLButtonAPI.EndSubSection();
 
 
         // --- Section 2: Other Options ---
@@ -435,26 +434,26 @@ public class ModGUIManager : MonoBehaviour
         // customBoxStyle.normal.background = MakeTex(1,1, new Color(0.1f, 0.1f, 0.3f, 0.7f)); // Helper needed for MakeTex
         GUIStyle customTitleStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Italic, normal = { textColor = Color.yellow } };
 
-        Logic.BeginSubSection("Miscellaneous", customBoxStyle, customTitleStyle);
+        PLButtonAPI.BeginSubSection("Miscellaneous", customBoxStyle, customTitleStyle);
 
-        Logic.AddLabel("Some informational text here.");
+        PLButtonAPI.AddLabel("Some informational text here.");
 
-        if (Logic.AddButton("Perform Action X"))
+        if (PLButtonAPI.AddButton("Perform Action X"))
         {
             Debug.Log("Action X Performed!");
         }
-        Logic.EndSubSection();
+        PLButtonAPI.EndSubSection();
 
 
         // --- Scrollable Area Example (Optional) ---
-        // Logic.BeginSubSection("Long List of Items");
+        // PLButtonAPI.BeginSubSection("Long List of Items");
         // _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(100));
         // for (int i = 0; i < 20; i++)
         // {
-        //     Logic.AddLabel($"Item Number {i+1}");
+        //     PLButtonAPI.AddLabel($"Item Number {i+1}");
         // }
         // GUILayout.EndScrollView();
-        // Logic.EndSubSection();
+        // PLButtonAPI.EndSubSection();
 
 
         // You can make the window draggable by its content if you wish,
@@ -498,7 +497,7 @@ For MelonLoader, `OnGUI` is usually implemented directly in your `MelonMod` clas
 
 ## 6. Tips & Best Practices
 
-*   **Unique Window IDs:** Ensure every `Window` instance has a unique `ID`. Using `string.GetHashCode()` on a descriptive name is a common practice.
+*   **Unique Window IDs:** Ensure every `PLWindow` instance has a unique `ID`. Using `string.GetHashCode()` on a descriptive name is a common practice.
 *   **`OnGUI()` Performance:** `OnGUI()` is called multiple times per frame (layout and repaint events). Keep your GUI logic efficient. Avoid complex calculations or allocations within `OnGUI()` if possible.
 *   **`GUILayoutOption`:** Use `GUILayoutOption` arrays to control the size and spacing of elements (e.g., `GUILayout.Width(150)`, `GUILayout.ExpandWidth(false)`).
 *   **`GUIStyle`:** For advanced customization, create and assign `GUIStyle` objects to elements. You can modify font, colors, background images, alignment, padding, etc.
@@ -512,12 +511,10 @@ For MelonLoader, `OnGUI` is usually implemented directly in your `MelonMod` clas
 
 *   **UI Not Appearing:**
     *   Ensure `OnGUI()` is being called. (Add `Debug.Log("OnGUI called");`)
-    *   Check if the `Window`'s `IsVisible` property is `true`.
-    *   Verify the `Window`'s `initialRect` is within screen bounds and has a positive width/height.
+    *   Check if the `PLWindow`'s `IsVisible` property is `true`.
+    *   Verify the `PLWindow`'s `initialRect` is within screen bounds and has a positive width/height.
     *   Ensure your mod loader is correctly loading your plugin/mod.
 *   **Window ID Conflicts:** If windows behave erratically or one disappears when another appears, you might have duplicate window IDs.
-*   **`GUILayout` Errors:** Console errors like "GUILayout: Mismatched BeginVertical/EndVertical" usually mean you have an unbalanced `Logic.BeginSubSection()` and `Logic.EndSubSection()` or other `GUILayout.Begin*`/`GUILayout.End*` calls.
+*   **`GUILayout` Errors:** Console errors like "GUILayout: Mismatched BeginVertical/EndVertical" usually mean you have an unbalanced `PLButtonAPI.BeginSubSection()` and `PLButtonAPI.EndSubSection()` or other `GUILayout.Begin*`/`GUILayout.End*` calls.
 *   **Style Issues:** If default styles look off, the game might have a very custom `GUI.skin`. You might need to define your own `GUIStyle`s more explicitly.
 *   **Performance Drops:** If the UI causes lag, try to simplify the layout, reduce the number of elements, or optimize any logic within your `DrawWindowContent` method. Avoid creating new `GUIStyle` objects every frame in `OnGUI`.
-
----
