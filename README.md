@@ -1,5 +1,3 @@
----
-
 # Meowijuana Button API: Documentation
 
 **Version:** 1.0 (Assumed)
