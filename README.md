@@ -1,7 +1,4 @@
 # Meowijuana Button API: Documentation
-
-**Version:** 1.0 (Assumed)
-**Author:** [Your Name/Alias]
 **Compatibility:** Unity Games (IL2CPP & Mono)
 
 ## Table of Contents
