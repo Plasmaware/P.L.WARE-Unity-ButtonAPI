@@ -10,7 +10,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         public static bool AddButton(string text, Action onClick, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = style ?? GUI.skin.button;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             if (GUILayout.Button(text, currentStyle, options))
             {
                 onClick?.Invoke();
@@ -22,7 +22,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         public static bool AddButton(string text, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = style ?? GUI.skin.button;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             return GUILayout.Button(text, currentStyle, options);
         }
 
@@ -30,7 +30,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         public static bool AddToggle(string text, ref bool toggleState, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = style ?? GUI.skin.toggle;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             bool previousState = toggleState;
             toggleState = GUILayout.Toggle(toggleState, text, currentStyle, options);
             return toggleState != previousState;
@@ -50,7 +50,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
             
             GUIStyle currentSliderStyle = sliderStyle ?? GUI.skin.horizontalSlider;
             GUIStyle currentThumbStyle = thumbStyle ?? GUI.skin.horizontalSliderThumb;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
 
             sliderValue = GUILayout.HorizontalSlider(sliderValue, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
             GUILayout.EndHorizontal();
@@ -72,7 +72,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
 
             GUIStyle currentSliderStyle = sliderStyle ?? GUI.skin.horizontalSlider;
             GUIStyle currentThumbStyle = thumbStyle ?? GUI.skin.horizontalSliderThumb;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
 
             tempFloat = GUILayout.HorizontalSlider(tempFloat, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
             sliderValue = Mathf.RoundToInt(tempFloat);
@@ -88,7 +88,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
             if (!string.IsNullOrEmpty(label))
                 GUILayout.Label(label, new GUILayoutOption[0]);
             GUIStyle currentStyle = style ?? GUI.skin.textField;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             textValue = GUILayout.TextField(textValue, currentStyle, options);
             return textValue != previousValue;
         }
@@ -99,7 +99,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
             if (!string.IsNullOrEmpty(label))
                 GUILayout.Label(label, new GUILayoutOption[0]);
             GUIStyle currentStyle = style ?? GUI.skin.textArea;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             textValue = GUILayout.TextArea(textValue, currentStyle, options);
             return textValue != previousValue;
         }
@@ -108,7 +108,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         public static void AddLabel(string text, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = style ?? GUI.skin.label;
-            if (options == null) options = new GUILayoutOption[0];
+            if (options == null) options = Array.Empty<GUILayoutOption>();
             GUILayout.Label(text, currentStyle, options);
         }
 
