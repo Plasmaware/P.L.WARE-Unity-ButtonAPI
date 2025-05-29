@@ -492,6 +492,56 @@ void Awake()
 
 For MelonLoader, `OnGUI` is usually implemented directly in your `MelonMod` class.
 
+### Loading Gifs for style
+```csharp
+using Meowijuana_ButtonAPI.Meowzers.Image_System;
+using UnityEngine;
+
+public class MyMod : MelonMod
+{
+    private string gifUrl = "https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif"; // Example GIF URL
+
+    public override void OnInitializeMelon()
+    {
+        GifLoader.LoadAndPlayGifFromUri(gifUrl, (success) => {
+            if (success)
+            {
+                MelonLogger.Msg("GIF from URI loaded and playing!");
+            }
+            else
+            {
+                MelonLogger.Error("Failed to load GIF from URI.");
+            }
+        });
+
+        // Or from a local file:
+        // string localGifPath = "Mods/MyLocalGif.gif";
+        // GifLoader.LoadAndPlayGifFromFile(localGifPath, success => { /* ... */ });
+    }
+
+    public override void OnGUI()
+    {
+        if (GifLoader.IsLoading)
+        {
+            GUILayout.Label("Loading GIF...");
+        }
+        else if (GifLoader.IsLoaded && GifLoader.IsPlaying)
+        {
+            Texture2D currentGifFrame = GifLoader.GetCurrentFrame();
+            if (currentGifFrame != null)
+            {
+                GUILayout.Box(currentGifFrame, GUILayout.Width(currentGifFrame.width), GUILayout.Height(currentGifFrame.height));
+            }
+        }
+    }
+
+    public override void OnDeinitializeMelon()
+    {
+        GifLoader.UnloadGifResources();
+    }
+}
+```
+
 ## 6. Tips & Best Practices
 
 *   **Unique Window IDs:** Ensure every `PLWindow` instance has a unique `ID`. Using `string.GetHashCode()` on a descriptive name is a common practice.
