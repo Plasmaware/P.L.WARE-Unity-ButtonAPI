@@ -27,9 +27,7 @@ Im not writing an ENTIRE fucking readme for this so i gpt'd it, it should tell y
         *   [Properties](#properties-plwindow)
         *   [Constructor](#constructor-plwindow)
         *   [Methods](#methods-plwindow)
-5.  [Example Usage]([#example-usage](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI/tree/main?tab=readme-ov-file#5-example-usage))
-6.  [Tips & Best Practices](#tips--best-practices)
-7.  [Troubleshooting](#troubleshooting)
+5.  [Example Usage]([#example-usage])
 
 ---
 
