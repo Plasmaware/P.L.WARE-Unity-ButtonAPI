@@ -1,11 +1,11 @@
-Im not writing an ENTIRE fucking readme for this so i gpt'd it, it should tell you what to do if ur on bepin nor melon and how to work it, kk by bye.
+Im not writing an ENTIRE fucking readme for this so i gpt'd it (I will fix n edit it tho), it should tell you what to do if ur on bepin nor melon and how to work it, kk by bye.
 
 # P.L.WARE Button API: Documentation
 
 ## Table of Contents
 
-1.  [Introduction](#introduction)
-2.  [Key Features](#key-features)
+1.  [Introduction]([#introduction](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI?tab=readme-ov-file#1-introduction))
+2.  [Key Features]([#key-features](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI?tab=readme-ov-file#2-key-features))
 3.  [Getting Started & Setup](#getting-started--setup)
     *   [Project Setup (General)](#project-setup-general)
     *   [For IL2CPP Games](#for-il2cpp-games)
