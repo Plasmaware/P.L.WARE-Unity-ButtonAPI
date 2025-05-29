@@ -29,7 +29,7 @@ Im not writing an ENTIRE fucking readme for this so i gpt'd it (I will fix n edi
         *   [Methods](#methods-plwindow)
 5.  [[Example Usage]](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI?tab=readme-ov-file#5-example-usage)
 6.  [[Tips n trickz]](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI/blob/main/README.md#6-tips--best-practices)
-7.  [Troubleshooting](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI/blob/main/README.md#7-troubleshooting)
+7.  [[Troubleshooting]](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI/blob/main/README.md#7-troubleshooting)
 
 ---
 
