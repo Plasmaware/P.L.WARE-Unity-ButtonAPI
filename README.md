@@ -1,3 +1,5 @@
+Im not writing an ENTIRE fucking readme for this so i gpt'd it.
+
 # P.L.WARE Button API: Documentation
 
 ## Table of Contents
