@@ -1,8 +1,8 @@
 ﻿using System;
-using UnityEngine;
 using System.Globalization;
+using UnityEngine;
 
-namespace Meowijuana_ButtonAPI.Meowzers
+namespace Meowijuana_SARS.API.Meowzers
 {
     public class Watermark
     {
@@ -22,7 +22,7 @@ namespace Meowijuana_ButtonAPI.Meowzers
         private float _lastFpsUpdateTime;
         private int _frameCount;
         private float _currentFps;
-        private const float FpsUpdateInterval = 0.5f; // Update FPS display twice a second
+        private const float FPS_UPDATE_INTERVAL = 0.5f; // Update FPS display twice a second
 
         public Watermark()
         {
@@ -74,7 +74,7 @@ namespace Meowijuana_ButtonAPI.Meowzers
         private void UpdateFPS()
         {
             _frameCount++;
-            if (Time.unscaledTime > _lastFpsUpdateTime + FpsUpdateInterval)
+            if (Time.unscaledTime > _lastFpsUpdateTime + FPS_UPDATE_INTERVAL)
             {
                 _currentFps = _frameCount / (Time.unscaledTime - _lastFpsUpdateTime);
                 _lastFpsUpdateTime = Time.unscaledTime;
@@ -148,11 +148,6 @@ namespace Meowijuana_ButtonAPI.Meowzers
             GUI.Box(watermarkRect, GUIContent.none, _backgroundStyle);
             Rect textRect = new Rect(watermarkRect.x + Padding, watermarkRect.y + Padding, contentSize.x, contentSize.y);
             GUI.Label(textRect, watermarkText, _watermarkStyle);
-        }
-        
-        public void SetCurrentUsername(string username)
-        {
-            UserName = username;
         }
     }
 }

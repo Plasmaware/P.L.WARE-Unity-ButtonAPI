@@ -11,10 +11,6 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         public int ID { get; private set; }
         public GUIStyle Style { get; set; }
 
-        public static GUIStyle DefaultWindowStyle { get; private set; }
-        public static GUIStyle DefaultButtonStyle { get; private set; }
-        public static GUIStyle DefaultToggleStyle { get; private set; }
-
         /// <summary>
         /// The delegate for the method that will draw the content inside the window.
         /// It receives the window ID as a parameter.
@@ -54,102 +50,6 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
         /// <param name="initialRect">The initial position and size of the window.</param>
         /// <param name="drawContentDelegate">The method that will be called to draw the window's content.</param>
         /// <param name="initialVisibility">Whether the window is visible initially.</param>
-
-        private static Texture2D MakeTex(int width, int height, Color col)
-        {
-            Color[] pix = new Color[width * height];
-            for (int i = 0; i < pix.Length; ++i)
-            {
-                pix[i] = col;
-            }
-
-            Texture2D result = new Texture2D(width, height);
-            result.SetPixels(pix);
-            result.Apply();
-            return result;
-        }
-
-        internal static void InitiateStyle(Texture2D windowBackground = null) // Pass the image or load it here
-        {
-            #region Styles
-            DefaultWindowStyle = new GUIStyle(GUI.skin.window)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                focused = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                hover = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onFocused = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                border = new RectOffset(5, 5, 5, 5),
-            };
-
-            DefaultButtonStyle = new GUIStyle(GUI.skin.button)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 0.5f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                hover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-                // REMOVED: textColor = Color.white, // This was incorrect
-            };
-            // Set default text color for all button states
-            DefaultButtonStyle.normal.textColor = Color.white;
-            DefaultButtonStyle.onNormal.textColor = Color.white;
-            DefaultButtonStyle.hover.textColor = Color.white;
-            DefaultButtonStyle.onHover.textColor = Color.white;
-            DefaultButtonStyle.active.textColor = Color.white;
-            DefaultButtonStyle.onActive.textColor = Color.white;
-            DefaultButtonStyle.focused.textColor = Color.white;
-            DefaultButtonStyle.onFocused.textColor = Color.white;
-
-            // Then, set specific text colors for different button states, overriding the default white
-            DefaultButtonStyle.hover.textColor = Color.cyan;
-            DefaultButtonStyle.active.textColor = Color.green;
-
-
-            DefaultToggleStyle = new GUIStyle(GUI.skin.toggle)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) }, // Off state background
-                onNormal = { background = MakeTex(2, 2, new Color(0.2f, 0.8f, 0.2f, 1f)) }, // On state background
-                hover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) }, // Off hover
-                onHover = { background = MakeTex(2, 2, new Color(0.3f, 0.9f, 0.3f, 1f)) }, // On hover
-                active = { background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 1f)) }, // Off active (pressed)
-                onActive = { background = MakeTex(2, 2, new Color(0.1f, 0.7f, 0.1f, 1f)) }, // On active (pressed)
-                // REMOVED: textColor = Color.white,
-            };
-            // Set default text colors for all toggle states
-            DefaultToggleStyle.normal.textColor = Color.white;
-            DefaultToggleStyle.onNormal.textColor = Color.white;
-            DefaultToggleStyle.hover.textColor = Color.white;
-            DefaultToggleStyle.onHover.textColor = Color.white;
-            DefaultToggleStyle.active.textColor = Color.white;
-            DefaultToggleStyle.onActive.textColor = Color.white;
-            DefaultToggleStyle.focused.textColor = Color.white;
-            DefaultToggleStyle.onFocused.textColor = Color.white;
-
-            // Specific text colors for toggle states (these will override the defaults above)
-            DefaultToggleStyle.onNormal.textColor = Color.white; // Text color when toggle is ON
-            DefaultToggleStyle.normal.textColor = Color.gray;   // Text color when toggle is OFF
-
-            #endregion
-
-            #region TextColors for Window Style
-            if (DefaultWindowStyle != null) // Check if it was initialized
-            {
-                DefaultWindowStyle.normal.textColor = Color.white;
-                DefaultWindowStyle.active.textColor = Color.white;
-                DefaultWindowStyle.focused.textColor = Color.white;
-                DefaultWindowStyle.hover.textColor = Color.white;
-                DefaultWindowStyle.onNormal.textColor = Color.white;
-                DefaultWindowStyle.onHover.textColor = Color.white;
-                DefaultWindowStyle.onActive.textColor = Color.white;
-                DefaultWindowStyle.onFocused.textColor = Color.white;
-            }
-            #endregion
-        }
         public Window(int id, string title, Rect initialRect, Action<int> drawContentDelegate, bool initialVisibility = false)
         {
             ID = id;
@@ -253,7 +153,7 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
                     newRect.yMin += delta.y;
                 if (_currentResizeDirection == ResizeDirection.Bottom || _currentResizeDirection == ResizeDirection.BottomLeft || _currentResizeDirection == ResizeDirection.BottomRight)
                     newRect.yMax += delta.y;
-
+                
                 if (newRect.width < MinWindowWidth)
                 {
                     if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft)

@@ -1,13 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-
-namespace Meowijuana_ButtonAPI.Meowzers
+namespace Meowijuana_SARS.API.Meowzers
 {
     public static class Logic
     {
         // --- Button ---
-        public static bool AddButton(string text, Action onClick, GUIStyle style = null, params GUILayoutOption[] options)
+        public static bool AddButtonOnClick(string text, Action onClick, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = style ?? GUI.skin.button;
             if (options == null) options = Array.Empty<GUILayoutOption>();
@@ -58,7 +57,7 @@ namespace Meowijuana_ButtonAPI.Meowzers
         }
 
         // Horizontal Slider (int)
-        public static bool AddSlider(string label, ref int sliderValue, int minValue, int maxValue, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
+        public static bool AddHSlider(string label, ref int sliderValue, int minValue, int maxValue, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
         {
             int previousValue = sliderValue;
             float tempFloat = sliderValue;
