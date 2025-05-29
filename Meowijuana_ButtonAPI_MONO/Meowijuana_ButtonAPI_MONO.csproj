@@ -406,6 +406,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Main.cs" />
+        <Compile Include="Meowzers\Image_System\GifLoader.cs" />
         <Compile Include="Meowzers\Image_System\UniGif\UniGif.cs" />
         <Compile Include="Meowzers\Image_System\UniGif\UniGifConst.cs" />
         <Compile Include="Meowzers\Image_System\UniGif\UniGifDecoder.cs" />

@@ -1,15 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MelonLoader;
-using UnityEngine.Networking; // For MelonCoroutines and MelonLogger
+using UnityEngine;
+using UnityEngine.Networking;
+using Object = UnityEngine.Object; // For MelonCoroutines and MelonLogger
 
 // Make sure you have the correct 'using' directive for UniGif
 // e.g., using UniGif;
 
-namespace Meowijuana_ButtonAPI.Meowzers.Image_System
+namespace Meowijuana_ButtonAPI_MONO.Meowzers.Image_System
 {
     public static class GifLoader
     {
@@ -28,11 +30,11 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
         /// </summary>
         /// <param name="filePath">The full path to the GIF file.</param>
         /// <param name="onLoadComplete">Optional callback: Action invoked with true if load/decode was successful, false otherwise.</param>
-        public static void LoadAndPlayGifFromFile(string filePath, System.Action<bool> onLoadComplete = null)
+        public static void LoadAndPlayGifFromFile(string filePath, Action<bool> onLoadComplete = null)
         {
             if (IsLoading)
             {
-                MelonLogger.Warning("[P.L.GIF] Another GIF loading process is already in progress. Please wait or cancel.");
+                MelonLogger.Warning("[GifLoader] Another GIF loading process is already in progress. Please wait or cancel.");
                 onLoadComplete?.Invoke(false);
                 return;
             }
@@ -41,7 +43,7 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
 
             if (!File.Exists(filePath))
             {
-                MelonLogger.Error($"[P.L.GIF] GIF file not found: {filePath}");
+                MelonLogger.Error($"[GifLoader] GIF file not found: {filePath}");
                 onLoadComplete?.Invoke(false);
                 return;
             }
@@ -55,9 +57,9 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
                     onLoadComplete?.Invoke(success);
                 })) as Coroutine;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                MelonLogger.Error($"[P.L.GIF] Error reading GIF file {filePath}: {ex.Message}");
+                MelonLogger.Error($"[GifLoader] Error reading GIF file {filePath}: {ex.Message}");
                 IsLoading = false;
                 onLoadComplete?.Invoke(false);
             }
@@ -68,20 +70,21 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
         /// </summary>
         /// <param name="uri">The URI of the GIF file.</param>
         /// <param name="onLoadComplete">Optional callback: Action invoked with true if load/decode was successful, false otherwise.</param>
-        public static void LoadAndPlayGifFromUri(string uri, System.Action<bool> onLoadComplete = null)
+        [Obsolete("Obsolete")]
+        public static void LoadAndPlayGifFromUri(string uri, Action<bool> onLoadComplete = null)
         {
             if (IsLoading)
             {
-                MelonLogger.Warning("[P.L.GIF] Another GIF loading process is already in progress. Please wait or cancel.");
+                MelonLogger.Warning("[GifLoader] Another GIF loading process is already in progress. Please wait or cancel.");
                 onLoadComplete?.Invoke(false);
                 return;
             }
 
             PrepareForNewLoad();
 
-            if (string.IsNullOrEmpty(uri) || !System.Uri.IsWellFormedUriString(uri, System.UriKind.Absolute))
+            if (string.IsNullOrEmpty(uri) || !Uri.IsWellFormedUriString(uri, UriKind.Absolute))
             {
-                MelonLogger.Error($"[P.L.GIF] Invalid URI: {uri}");
+                MelonLogger.Error($"[GifLoader] Invalid URI: {uri}");
                 onLoadComplete?.Invoke(false);
                 return;
             }
@@ -106,25 +109,26 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
             }
         }
 
-        private static IEnumerator DownloadAndDecodeGifCoroutine(string uri, System.Action<bool> onComplete)
+        [Obsolete("Obsolete")]
+        private static IEnumerator DownloadAndDecodeGifCoroutine(string uri, Action<bool> onComplete)
         {
-            MelonLogger.Msg($"[P.L.GIF] Starting download from URI: {uri}");
+            MelonLogger.Msg($"[GifLoader] Starting download from URI: {uri}");
             UnityWebRequest webRequest = UnityWebRequest.Get(uri);
             webRequest.timeout = 30;
             yield return webRequest.SendWebRequest();
             if (webRequest.isNetworkError || webRequest.isHttpError)
             {
-                MelonLogger.Error($"[P.L.GIF] Error downloading GIF from {uri}: {webRequest.error}");
+                MelonLogger.Error($"[GifLoader] Error downloading GIF from {uri}: {webRequest.error}");
                 onComplete?.Invoke(false);
                 yield break;
             }
-            MelonLogger.Msg($"[P.L.GIF] Download successful. Size: {webRequest.downloadHandler.data.Length} bytes. Decoding...");
+            MelonLogger.Msg($"[GifLoader] Download successful. Size: {webRequest.downloadHandler.data.Length} bytes. Decoding...");
             byte[] gifData = webRequest.downloadHandler.data;
             yield return MelonCoroutines.Start(DecodeGifCoroutine(gifData, onComplete));
         }
 
 
-        private static IEnumerator DecodeGifCoroutine(byte[] gifData, System.Action<bool> onComplete)
+        private static IEnumerator DecodeGifCoroutine(byte[] gifData, Action<bool> onComplete)
         {
             List<UniGif.GifTexture> decodedGifTextures = null;
             bool success;
@@ -153,12 +157,12 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
 
                 IsLoaded = true;
                 success = true;
-                MelonLogger.Msg($"[P.L.GIF] GIF decoded successfully. Frames: {_gifFrames.Length}");
+                MelonLogger.Msg($"[GifLoader] GIF decoded successfully. Frames: {_gifFrames.Length}");
                 StartAnimationInternal();
             }
             else
             {
-                MelonLogger.Error("[P.L.GIF] Failed to decode GIF or GIF contains no frames.");
+                MelonLogger.Error("[GifLoader] Failed to decode GIF or GIF contains no frames.");
                 IsLoaded = false;
                 success = false;
             }
@@ -169,7 +173,7 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
         {
             if (!IsLoaded || _gifFrames == null || _gifFrames.Length == 0)
             {
-                MelonLogger.Warning("[P.L.GIF] Cannot start animation: GIF not loaded or no frames.");
+                MelonLogger.Warning("[GifLoader] Cannot start animation: GIF not loaded or no frames.");
                 return;
             }
             if (IsPlaying) return;
@@ -178,7 +182,7 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
             _currentFrameIndex = 0;
             if (_animationCoroutine != null) MelonCoroutines.Stop(_animationCoroutine); // Stop previous if any
             _animationCoroutine = MelonCoroutines.Start(PlayGifAnimationLoop()) as Coroutine;
-            MelonLogger.Msg("[P.L.GIF] GIF animation started.");
+            MelonLogger.Msg("[GifLoader] GIF animation started.");
         }
 
         private static IEnumerator PlayGifAnimationLoop()
@@ -211,7 +215,7 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
                 MelonCoroutines.Stop(_animationCoroutine);
                 _animationCoroutine = null;
             }
-            //MelonLogger.Msg("[P.L.GIF] GIF animation stopped."); // Can be a bit noisy if called often
+            //MelonLogger.Msg("[GifLoader] GIF animation stopped."); // Can be a bit noisy if called often
         }
 
         public static void UnloadGifResources()
@@ -241,7 +245,7 @@ namespace Meowijuana_ButtonAPI.Meowzers.Image_System
             _currentFrameIndex = 0;
             IsLoaded = false;
             // IsPlaying should already be false from StopAnimation()
-            // MelonLogger.Msg("[P.L.GIF] GIF resources unloaded."); // Can be noisy
+            //MelonLogger.Msg("[GifLoader] GIF resources unloaded."); // Can be noisy
         }
     }
 }
