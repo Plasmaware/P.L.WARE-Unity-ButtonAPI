@@ -1,4 +1,4 @@
-Im not writing an ENTIRE fucking readme for this so i gpt'd it.
+Im not writing an ENTIRE fucking readme for this so i gpt'd it, it should tell you what to do if ur on bepin nor melon and how to work it, kk by bye.
 
 # P.L.WARE Button API: Documentation
 
