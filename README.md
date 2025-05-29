@@ -62,7 +62,7 @@ To use the P.L.WARE Button API, you'll typically be creating a DLL (Dynamic Link
     *   Target a .NET Framework version compatible with the Unity game you're modding (e.g., .NET Framework 4.7.2, .NET Standard 2.0 for broader compatibility, especially with BepInEx).
 
 2.  **Add API Files:**
-    *   Copy the `Controls.cs`, `PLWatermark.cs`, and `PLWindow.cs` files from the [P.L.WARE Button API GitHub repository](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI) into your project (typically into a subfolder like `ButtonAPI`).
+    *   Copy the Solution files from the [P.L.WARE Button API GitHub repository](https://github.com/Plasmaware/P.L.WARE-Unity-ButtonAPI) into your project (typically into a subfolder like `ButtonAPI`).
 
 3.  **Add Unity Engine References:**
     *   You'll need to reference Unity's assemblies. These are usually found in the game's `Managed` folder (e.g., `GAME_Data/Managed/`) or within your mod loader's directories (e.g., `MelonLoader/Managed/` or `BepInEx/core/`).
