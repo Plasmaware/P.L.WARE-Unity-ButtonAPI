@@ -76,7 +76,7 @@ public class Manager
             MelonLogger.Msg("Player name reset!");
         }
         Logic.EndSubSection();
-        
+
         Logic.BeginSubSection("Miscellaneous", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
         Logic.AddLabel("Some informational text here.");
         if (Logic.AddButton("Update Style", Window.DefaultButtonStyle))

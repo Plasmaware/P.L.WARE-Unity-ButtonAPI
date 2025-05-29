@@ -62,31 +62,134 @@ public class Manager
     }
     void DrawMainWindowContent(int windowId)
     {
-        // Logic.AddLabel("Welcome to the Mod Menu! (MelonLoader)");
-        Logic.BeginSubSection("Player Cheats", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
-        if (Logic.AddToggle("Enable God Mode", ref _feature1Enabled, Window.DefaultToggleStyle))
+        // --- Main Layout: Tabs on Top, Content Below ---
+        GUILayout.BeginHorizontal(); // For side tabs, or skip if tabs are above content area
+
+        // --- Tab Navigation Area (Top in this example) ---
+        DrawTabButtons();
+
+        GUILayout.EndHorizontal(); // End tab bar horizontal layout
+
+        GUILayout.Space(10); // Space between tab bar and content
+
+        // --- Content Area ---
+        // GUILayout.BeginVertical(Window.DefaultSectionStyle, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)); // Optional: wrap content in a styled box
+
+        switch (_currentTab)
         {
-            MelonLogger.Msg("God Mode Toggled: " + _feature1Enabled);
-            // Add your god mode logic here
+            case MenuTab.Player:
+                DrawPlayerTab();
+                break;
+            case MenuTab.Economy:
+                DrawEconomyTab();
+                break;
+            case MenuTab.Visuals:
+                DrawVisualsTab();
+                break;
+            // Add cases for other tabs
+            default:
+                break;
+        }
+        // GUILayout.EndVertical(); // End content area box
+
+        GUI.DragWindow(_mainWindow.DraggableArea); // Use the window's defined draggable area
+    }
+
+    void DrawTabButtons()
+    {
+        // Example for top tabs using GUILayout.Toolbar
+        // For more custom side tabs, you'd use GUILayout.BeginVertical for the tab bar
+        // and then GUILayout.Button for each tab.
+
+        string[] tabNames = Enum.GetNames(typeof(MenuTab));
+        GUIStyle tabButtonStyle = new GUIStyle(Window.DefaultButtonStyle ?? GUI.skin.button); // Use your default or fallback
+        tabButtonStyle.fixedHeight = 30; // Example fixed height for tabs
+        tabButtonStyle.margin = new RectOffset(2, 2, 5, 5); // Add some margin
+
+        // For a more "plvsmvvrw.lol" style (buttons across the top):
+        GUILayout.BeginHorizontal();
+        foreach (MenuTab tab in Enum.GetValues(typeof(MenuTab)))
+        {
+            // Highlight the active tab
+            GUIStyle currentTabStyle = new GUIStyle(tabButtonStyle);
+            if (_currentTab == tab)
+            {
+                // Modify style for active tab (e.g., different background or text color)
+                currentTabStyle.normal.background = Window.DefaultToggleStyle?.onNormal?.background ?? MakeTex(2, 2, Color.gray); // Example active color
+                currentTabStyle.normal.textColor = Color.cyan; // Example active text color
+            }
+
+            if (GUILayout.Button(tab.ToString(), currentTabStyle, GUILayout.ExpandWidth(true)))
+            {
+                _currentTab = tab;
+            }
+        }
+        GUILayout.EndHorizontal();
+
+
+        // --- Alternative: Side Tab Buttons ---
+        /*
+        GUILayout.BeginVertical(Window.DefaultSectionStyle, GUILayout.Width(150), GUILayout.ExpandHeight(true)); // Tab bar on the left
+
+        foreach (MenuTab tab in Enum.GetValues(typeof(MenuTab)))
+        {
+            GUIStyle currentTabStyle = new GUIStyle(tabButtonStyle);
+             if (_currentTab == tab)
+            {
+                currentTabStyle.normal.background = Window.DefaultToggleStyle?.onNormal?.background ?? MakeTex(2,2, Color.gray);
+                currentTabStyle.normal.textColor = Color.cyan;
+            }
+
+            if (GUILayout.Button(tab.ToString(), currentTabStyle, GUILayout.Height(35))) // GUILayout.ExpandWidth(true) if vertical bar
+            {
+                _currentTab = tab;
+            }
+            GUILayout.Space(2); // Space between tab buttons
+        }
+        GUILayout.EndVertical();
+        */
+    }
+
+    // --- Individual Tab Drawing Methods ---
+    void DrawPlayerTab()
+    {
+        Logic.BeginSubSection("Player Cheats", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
+        if (Logic.AddToggle("Enable God Mode", ref _godModeEnabled, Window.DefaultToggleStyle))
+        {
+            MelonLogger.Msg("God Mode Toggled: " + _godModeEnabled);
         }
         Logic.AddSlider("Movement Speed", ref _speedValue, 5f, 50f);
         Logic.AddTextField("Player Name:", ref _playerName);
-        if (Logic.AddButtonOnClick("Reset Player Name", () => { _playerName = "DefaultPlayer"; }, Window.DefaultButtonStyle))
+        if (Logic.AddButton("Reset Player Name", () => { _playerName = "DefaultPlayer"; }, Window.DefaultButtonStyle))
         {
             MelonLogger.Msg("Player name reset!");
         }
         Logic.EndSubSection();
-        
+
         Logic.BeginSubSection("Miscellaneous", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
         Logic.AddLabel("Some informational text here.");
-        if (Logic.AddButton("Update Style", Window.DefaultButtonStyle))
+        if (Logic.AddButton("Perform Action X", Window.DefaultButtonStyle))
         {
-            MelonLogger.Msg("Style Update Performed!");
-            Window.InitiateStyle();
+            MelonLogger.Msg("Action X Performed!");
         }
         Logic.EndSubSection();
+    }
 
-        GUI.DragWindow(); // Typically handled by PLWindow's title bar
+    void DrawEconomyTab()
+    {
+        Logic.BeginSubSection("Self & Economy", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
+        Logic.AddToggle("Force Revive", ref _forceRevive, Window.DefaultToggleStyle);
+        Logic.AddToggle("Infinite Money", ref _infMoney, Window.DefaultToggleStyle);
+        // ... more economy options
+        Logic.EndSubSection();
+    }
+
+    void DrawVisualsTab()
+    {
+        Logic.BeginSubSection("Visual Options", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
+        Logic.AddLabel("Visual settings will go here.");
+        // ... visual options
+        Logic.EndSubSection();
     }
 }
 
