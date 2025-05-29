@@ -400,7 +400,7 @@ public class ModGUIManager : MonoBehaviour
     void DrawMainWindowContent(int windowId)
     {
         // You can use GUILayout for automatic layouting
-        GUILayout.Label("Welcome to the P.L.WARE Mod Menu!");
+        GUILayout.Label("Welcome to the Mod Menu!");
         GUILayout.Space(10);
 
         // --- Section 1: Player Cheats ---
