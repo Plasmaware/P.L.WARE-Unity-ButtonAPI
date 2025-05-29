@@ -1,5 +1,7 @@
 Im not writing an ENTIRE fucking readme for this so i gpt'd it (I will fix n edit it tho), it should tell you what to do if ur on bepin nor melon and how to work it, kk by bye.
 
+![image](https://github.com/user-attachments/assets/e18df85b-545b-45d0-a2f4-b78a5b0b69c4)
+
 # P.L.WARE Button API: Documentation
 
 ## Table of Contents
