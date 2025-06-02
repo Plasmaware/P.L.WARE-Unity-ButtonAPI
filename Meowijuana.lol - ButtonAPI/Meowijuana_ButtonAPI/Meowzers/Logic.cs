@@ -46,7 +46,7 @@ namespace Meowijuana_SARS.API.Meowzers
                 string labelText = showValue ? $"{label} ({sliderValue:F2})" : label;
                 GUILayout.Label(labelText, new[] { GUILayout.Width(150) });
             }
-            
+
             GUIStyle currentSliderStyle = sliderStyle ?? GUI.skin.horizontalSlider;
             GUIStyle currentThumbStyle = thumbStyle ?? GUI.skin.horizontalSliderThumb;
             if (options == null) options = Array.Empty<GUILayoutOption>();
@@ -91,7 +91,7 @@ namespace Meowijuana_SARS.API.Meowzers
             textValue = GUILayout.TextField(textValue, currentStyle, options);
             return textValue != previousValue;
         }
-        
+
         public static bool AddTextArea(string label, ref string textValue, GUIStyle style = null, params GUILayoutOption[] options)
         {
             string previousValue = textValue;
@@ -120,7 +120,7 @@ namespace Meowijuana_SARS.API.Meowzers
             _defaultBoxStyle = boxStyle;
             _defaultTitleStyle = titleStyle;
         }
-        
+
         public static void BeginSubSection(string title = null, GUIStyle boxStyle = null, GUIStyle titleStyle = null, params GUILayoutOption[] options)
         {
             GUIStyle currentBoxStyle = boxStyle ?? _defaultBoxStyle ?? GUI.skin.box;
