@@ -1,26 +1,44 @@
-﻿using System;
-using UnityEngine;
+﻿// Watermark.cs
+using System;
 using System.Globalization;
-using Meowijuana_ButtonAPI_MONO.Meowzers.Image_System; // Your GifLoader namespace
+using UnityEngine;
 
-namespace Scytheware.Meowzers // Or your actual namespace for Watermark
+namespace Meowijuana_ButtonAPI_MONO.Meowzers
 {
-    public class Watermark
+    public class Watermark : IDisposable
     {
         public bool IsVisible { get; set; } = true;
         public string CheatName { get; set; } = "Cheatname";
         public string Version { get; set; } = "[Freemium]";
-        public string UserName { get; set; } // Set this from your game's player data
-        public Color TextColor { get; set; } = Color.white;
-        public Color BackgroundColor { get; set; } = new Color(0.1f, 0.1f, 0.1f, 0.7f); // Dark semi-transparent
-        public int FontSize { get; set; } = 12;
-        public FontStyle FontStyle { get; set; } = FontStyle.Normal;
+        public string UserName { get; set; }
+
+        // Style properties with backing fields to detect changes
+        private Color _textColor = Color.white;
+        public Color TextColor { get => _textColor; set { if (_textColor != value) { _textColor = value; _stylesNeedUpdate = true; } } }
+
+        private Color _backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.6f);
+        public Color BackgroundColor { get => _backgroundColor; set { if (_backgroundColor != value) { _backgroundColor = value; _stylesNeedUpdate = true; } } }
+
+        private int _fontSize = 12;
+        public int FontSize { get => _fontSize; set { if (_fontSize != value) { _fontSize = value; _stylesNeedUpdate = true; } } }
+
+        private FontStyle _fontStyle = FontStyle.Normal;
+        // Renamed to avoid conflict with UnityEngine.FontStyle type itself
+        public FontStyle WatermarkFontStyle { get => _fontStyle; set { if (_fontStyle != value) { _fontStyle = value; _stylesNeedUpdate = true; } } }
+
         public TextAnchor Alignment { get; set; } = TextAnchor.UpperRight;
-        public float Padding { get; set; } = 10f; // Padding around the content inside the box
-        public float SpaceBetweenGifAndText { get; set; } = 5f; // Space between GIF and text
+        public float Padding { get; set; } = 5f; // Original padding was 5f
+
+        // For GIF integration (if GIFLOADER_INTEGRATION is defined)
+        public float SpaceBetweenGifAndText { get; set; } = 5f;
 
         private GUIStyle _watermarkStyle;
         private GUIStyle _backgroundStyle;
+        private Texture2D _backgroundTexture; // Instance-specific texture
+
+        private bool _stylesNeedUpdate = true;
+        private bool _disposed = false;
+
         private float _lastFpsUpdateTime;
         private int _frameCount;
         private float _currentFps;
@@ -31,74 +49,43 @@ namespace Scytheware.Meowzers // Or your actual namespace for Watermark
             UserName = "Player"; // Placeholder
         }
 
-        private void InitializeStyles()
+        private void InitializeOrUpdateStyles()
         {
+            if (!_stylesNeedUpdate && _watermarkStyle != null && _backgroundStyle != null && _backgroundTexture != null)
+                return;
+
+            // Watermark Text Style
             if (_watermarkStyle == null)
-            {
-                _watermarkStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = FontSize,
-                    fontStyle = FontStyle,
-                    alignment = TextAnchor.MiddleLeft // Text itself aligns left within its own rect
-                };
-                _watermarkStyle.normal.textColor = TextColor;
-            }
-            else
-            {
-                // Update if properties changed
-                if (_watermarkStyle.fontSize != FontSize) _watermarkStyle.fontSize = FontSize;
-                if (_watermarkStyle.fontStyle != FontStyle) _watermarkStyle.fontStyle = FontStyle;
-                if (_watermarkStyle.normal.textColor != TextColor) _watermarkStyle.normal.textColor = TextColor;
-            }
+                _watermarkStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
 
+            _watermarkStyle.fontSize = FontSize;
+            _watermarkStyle.fontStyle = WatermarkFontStyle; // Use the renamed property
+            _watermarkStyle.normal.textColor = TextColor;
+
+            // Background Box Style
             if (_backgroundStyle == null)
-            {
-                _backgroundStyle = new GUIStyle(GUI.skin.box);
-                Texture2D bgTex = new Texture2D(1, 1);
-                bgTex.SetPixel(0, 0, BackgroundColor);
-                bgTex.Apply();
-                _backgroundStyle.normal.background = bgTex;
-                _backgroundStyle.border = new RectOffset(0, 0, 0, 0); // Ensure no default box border styling interferes
-            }
-            else
-            {
-                // Update if background color changed
-                // Check if background texture exists and if its color is different
-                bool needsUpdate = false;
-                if (_backgroundStyle.normal.background == null)
-                {
-                    needsUpdate = true;
-                }
-                else
-                {
-                    // This direct GetPixel comparison might be problematic if the texture was modified elsewhere
-                    // or if it's not a 1x1 texture. For a 1x1 solid color, it should be okay.
-                    try
-                    {
-                        if (_backgroundStyle.normal.background.GetPixel(0, 0) != BackgroundColor)
-                        {
-                            needsUpdate = true;
-                        }
-                    }
-                    catch (UnityException) // Catches "Texture 'Texture2D' is not readable" if not marked read/write
-                    {
-                        needsUpdate = true; // Force update if we can't read it
-                    }
-                }
+                _backgroundStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(0, 0, 0, 0) }; // Ensure no default border
 
-
-                if (needsUpdate)
+            // Efficiently update or create the background texture
+            bool recreateTexture = _backgroundTexture == null;
+            if (!recreateTexture)
+            {
+                try
                 {
-                    if (_backgroundStyle.normal.background != null)
-                    {
-                        UnityEngine.Object.Destroy(_backgroundStyle.normal.background);
-                    }
-                    Texture2D bgTex = new Texture2D(1, 1);
-                    bgTex.SetPixel(0, 0, BackgroundColor);
-                    bgTex.Apply();
-                    _backgroundStyle.normal.background = bgTex;
+                    if (_backgroundTexture.GetPixel(0, 0) != BackgroundColor) recreateTexture = true;
                 }
+                catch { recreateTexture = true; } // Texture might not be readable
             }
+
+            if (recreateTexture)
+            {
+                if (_backgroundTexture != null) UnityEngine.Object.Destroy(_backgroundTexture);
+                _backgroundTexture = new Texture2D(1, 1) { hideFlags = HideFlags.HideAndDontSave };
+                _backgroundTexture.SetPixel(0, 0, BackgroundColor);
+                _backgroundTexture.Apply();
+                _backgroundStyle.normal.background = _backgroundTexture;
+            }
+            _stylesNeedUpdate = false;
         }
 
         private void UpdateFPS()
@@ -114,138 +101,115 @@ namespace Scytheware.Meowzers // Or your actual namespace for Watermark
 
         public void Render()
         {
-            if (!IsVisible) return;
+            if (!IsVisible || _disposed) return;
 
-            InitializeStyles(); // Ensure styles are up-to-date if properties changed
+            InitializeOrUpdateStyles();
             UpdateFPS();
 
-            // --- Prepare Content ---
             string timeString = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
             string fpsString = $"FPS: {_currentFps:F0}";
             string watermarkTextString = $"{CheatName} {Version}";
-            if (!string.IsNullOrEmpty(UserName))
-            {
-                watermarkTextString += $" | {UserName}";
-            }
+            if (!string.IsNullOrEmpty(UserName)) watermarkTextString += $" | {UserName}";
             watermarkTextString += $" | {timeString} | {fpsString}";
 
             GUIContent watermarkTextContent = new GUIContent(watermarkTextString);
             Vector2 textSize = _watermarkStyle.CalcSize(watermarkTextContent);
 
-            Texture2D currentGifFrame = null;
-            float gifWidth = 0f;
-            float gifHeight = 0f;
-            bool gifIsPresent = false;
-
-            if (GifLoader.IsLoaded && GifLoader.IsPlaying)
-            {
-                currentGifFrame = GifLoader.GetCurrentFrame();
-                if (currentGifFrame != null)
-                {
-                    gifWidth = currentGifFrame.width;
-                    gifHeight = currentGifFrame.height;
-                    gifIsPresent = true;
-                }
-            }
-            // If GIF is loading, you might want to display a placeholder or adjust text
-            // For now, we'll just not show the GIF part if it's loading or not ready
-
-            // --- Calculate Dimensions ---
             float totalContentWidth = textSize.x;
             float totalContentHeight = textSize.y;
 
-            if (gifIsPresent)
-            {
+#if GIFLOADER_INTEGRATION
+            Texture2D currentGifFrame = null;
+            float gifWidth = 0f, gifHeight = 0f;
+            bool gifIsPresent = false, gifIsActuallyLoading = false;
+            GUIContent loadingTextContent = null; Vector2 loadingTextSize = Vector2.zero;
+
+            try {
+                gifIsActuallyLoading = GifLoader.IsLoading;
+                if (GifLoader.IsLoaded && GifLoader.IsPlaying) {
+                    currentGifFrame = GifLoader.GetCurrentFrame();
+                    if (currentGifFrame != null) {
+                        gifWidth = currentGifFrame.width; gifHeight = currentGifFrame.height;
+                        gifIsPresent = true;
+                    }
+                }
+            } catch (Exception ex) { Debug.LogWarning($"[Watermark.MONO] GifLoader access error: {ex.Message}"); }
+
+            if (gifIsActuallyLoading && !gifIsPresent) {
+                loadingTextContent = new GUIContent("[GIF]");
+                loadingTextSize = _watermarkStyle.CalcSize(loadingTextContent);
+            }
+
+            if (gifIsPresent) {
                 totalContentWidth = gifWidth + SpaceBetweenGifAndText + textSize.x;
                 totalContentHeight = Mathf.Max(gifHeight, textSize.y);
+            } else if (gifIsActuallyLoading) {
+                totalContentWidth = loadingTextSize.x + SpaceBetweenGifAndText + textSize.x;
+                totalContentHeight = Mathf.Max(loadingTextSize.y, textSize.y);
             }
+#endif
 
             float boxWidth = totalContentWidth + Padding * 2;
             float boxHeight = totalContentHeight + Padding * 2;
+            Rect mainRect = new Rect(0, 0, boxWidth, boxHeight);
 
-            // --- Calculate Box Position (Alignment) ---
-            Rect mainRect = new Rect(0, 0, boxWidth, boxHeight); // This will be our main background box
-
+            // Alignment logic (same as original)
             switch (Alignment)
             {
-                case TextAnchor.UpperLeft:
-                    mainRect.x = Padding; // Screen edge padding
-                    mainRect.y = Padding;
-                    break;
-                case TextAnchor.UpperCenter:
-                    mainRect.x = (Screen.width - boxWidth) / 2f;
-                    mainRect.y = Padding;
-                    break;
-                case TextAnchor.UpperRight:
-                    mainRect.x = Screen.width - boxWidth - Padding;
-                    mainRect.y = Padding;
-                    break;
-                case TextAnchor.MiddleLeft:
-                    mainRect.x = Padding;
-                    mainRect.y = (Screen.height - boxHeight) / 2f;
-                    break;
-                case TextAnchor.MiddleCenter:
-                    mainRect.x = (Screen.width - boxWidth) / 2f;
-                    mainRect.y = (Screen.height - boxHeight) / 2f;
-                    break;
-                case TextAnchor.MiddleRight:
-                    mainRect.x = Screen.width - boxWidth - Padding;
-                    mainRect.y = (Screen.height - boxHeight) / 2f;
-                    break;
-                case TextAnchor.LowerLeft:
-                    mainRect.x = Padding;
-                    mainRect.y = Screen.height - boxHeight - Padding;
-                    break;
-                case TextAnchor.LowerCenter:
-                    mainRect.x = (Screen.width - boxWidth) / 2f;
-                    mainRect.y = Screen.height - boxHeight - Padding;
-                    break;
-                case TextAnchor.LowerRight:
-                    mainRect.x = Screen.width - boxWidth - Padding;
-                    mainRect.y = Screen.height - boxHeight - Padding;
-                    break;
+                case TextAnchor.UpperLeft: mainRect.x = Padding; mainRect.y = Padding; break;
+                case TextAnchor.UpperCenter: mainRect.x = (Screen.width - boxWidth) / 2f; mainRect.y = Padding; break;
+                case TextAnchor.UpperRight: mainRect.x = Screen.width - boxWidth - Padding; mainRect.y = Padding; break;
+                case TextAnchor.MiddleLeft: mainRect.x = Padding; mainRect.y = (Screen.height - boxHeight) / 2f; break;
+                case TextAnchor.MiddleCenter: mainRect.x = (Screen.width - boxWidth) / 2f; mainRect.y = (Screen.height - boxHeight) / 2f; break;
+                case TextAnchor.MiddleRight: mainRect.x = Screen.width - boxWidth - Padding; mainRect.y = (Screen.height - boxHeight) / 2f; break;
+                case TextAnchor.LowerLeft: mainRect.x = Padding; mainRect.y = Screen.height - boxHeight - Padding; break;
+                case TextAnchor.LowerCenter: mainRect.x = (Screen.width - boxWidth) / 2f; mainRect.y = Screen.height - boxHeight - Padding; break;
+                case TextAnchor.LowerRight: mainRect.x = Screen.width - boxWidth - Padding; mainRect.y = Screen.height - boxHeight - Padding; break;
             }
 
-            // --- Draw Background ---
             GUI.Box(mainRect, GUIContent.none, _backgroundStyle);
 
-            // --- Draw Content (GIF and Text) ---
-            float currentX = mainRect.x + Padding; // Start X inside the box's padding
-            float contentAreaY = mainRect.y + Padding; // Start Y for content
+            float currentX = mainRect.x + Padding;
+            float contentAreaY = mainRect.y + Padding;
 
-            // Draw GIF
-            if (gifIsPresent)
-            {
-                // Vertically center GIF within the totalContentHeight
-                float gifYOffset = (totalContentHeight - gifHeight) / 2f;
-                Rect gifRect = new Rect(currentX, contentAreaY + gifYOffset, gifWidth, gifHeight);
+#if GIFLOADER_INTEGRATION
+            if (gifIsPresent) {
+                Rect gifRect = new Rect(currentX, contentAreaY + (totalContentHeight - gifHeight) / 2f, gifWidth, gifHeight);
                 GUI.DrawTexture(gifRect, currentGifFrame);
                 currentX += gifWidth + SpaceBetweenGifAndText;
+            } else if (gifIsActuallyLoading) {
+                Rect loadingRect = new Rect(currentX, contentAreaY + (totalContentHeight - loadingTextSize.y) / 2f, loadingTextSize.x, loadingTextSize.y);
+                GUI.Label(loadingRect, loadingTextContent, _watermarkStyle);
+                currentX += loadingTextSize.x + SpaceBetweenGifAndText;
             }
-            else if (GifLoader.IsLoading)
-            {
-                // Optional: If you want to show a "Loading..." text instead of the GIF while it's loading
-                // You could calculate its size and adjust totalContentWidth/Height accordingly
-                // or simply draw it here if there's enough space.
-                GUIContent loadingContent = new GUIContent("[GIF]"); // Shorter text
-                Vector2 loadingSize = _watermarkStyle.CalcSize(loadingContent);
-                float loadingYOffset = (totalContentHeight - loadingSize.y) / 2f;
-                Rect loadingRect = new Rect(currentX, contentAreaY + loadingYOffset, loadingSize.x, loadingSize.y);
-                GUI.Label(loadingRect, loadingContent, _watermarkStyle);
-                currentX += loadingSize.x + SpaceBetweenGifAndText;
-            }
+#endif
 
-
-            // Draw Text
-            // Vertically center Text within the totalContentHeight
-            float textYOffset = (totalContentHeight - textSize.y) / 2f;
-            Rect textRect = new Rect(currentX, contentAreaY + textYOffset, textSize.x, textSize.y);
+            // Vertically center the main text content within the available height
+            Rect textRect = new Rect(currentX, contentAreaY + (totalContentHeight - textSize.y) / 2f, textSize.x, textSize.y);
             GUI.Label(textRect, watermarkTextContent, _watermarkStyle);
         }
 
-        public void SetCurrentUsername(string username)
+        public void SetCurrentUsername(string username) => UserName = username;
+
+        public void Dispose()
         {
-            UserName = username;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (disposing)
+            {
+                if (_backgroundTexture != null)
+                {
+                    UnityEngine.Object.Destroy(_backgroundTexture);
+                    _backgroundTexture = null;
+                }
+            }
+            _disposed = true;
+        }
+        ~Watermark() { Dispose(false); }
     }
 }

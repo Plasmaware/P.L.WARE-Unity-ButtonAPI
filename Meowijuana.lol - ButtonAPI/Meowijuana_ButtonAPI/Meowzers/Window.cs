@@ -1,7 +1,8 @@
-﻿using System;
+﻿// Window.cs
+using System;
 using UnityEngine;
 
-namespace Meowijuana_SARS.API.Meowzers
+namespace Meowijuana_ButtonAPI.API.Meowzers
 {
     public class Window
     {
@@ -9,184 +10,246 @@ namespace Meowijuana_SARS.API.Meowzers
         public string Title { get; set; }
         public bool IsVisible { get; set; }
         public int ID { get; private set; }
-        public GUIStyle Style { get; set; }
+        public GUIStyle Style { get; set; } // Instance-specific style override
 
-        public static GUIStyle DefaultWindowStyle { get; set; }
-        public static GUIStyle DefaultButtonStyle { get; set; }
-        public static GUIStyle DefaultToggleStyle { get; set; }
-        public static GUIStyle DefaultSectionStyle { get; set; }
-        private static Texture2D _cachedImage; // Assuming this will be loaded somewhere
+        // --- Static Default Styles (Initialized once) ---
+        private static GUIStyle _sDefaultWindowStyle;
+        private static GUIStyle _sDefaultSectionStyle;
+        private static GUIStyle _sDefaultTitleStyle; // For section titles
+        private static GUIStyle _sDefaultLabelStyle;
+        private static GUIStyle _sDefaultButtonStyle;
+        private static GUIStyle _sDefaultToggleStyle;
+        private static GUIStyle _sDefaultTextFieldStyle;
+        private static GUIStyle _sDefaultTextAreaStyle;
+        private static GUIStyle _sDefaultHorizontalSliderStyle;
+        private static GUIStyle _sDefaultHorizontalSliderThumbStyle;
+
+
+        private static bool _sStylesInitialized = false;
+
+        // Textures for default styles - managed statically and created once.
+        // Add HideFlags.HideAndDontSave to prevent them from being saved with scenes
+        // and to ensure they are cleaned up when the AppDomain unloads.
+        private static Texture2D _sTexWindowBg;
+        private static Texture2D _sTexSectionBg;
+        private static Texture2D _sTexButtonNormal;
+        private static Texture2D _sTexButtonHover;
+        private static Texture2D _sTexButtonActive;
+        private static Texture2D _sTexToggleNormalOff;
+        private static Texture2D _sTexToggleHoverOff;
+        private static Texture2D _sTexToggleNormalOn;
+        private static Texture2D _sTexToggleHoverOn;
+        private static Texture2D _sTexTextFieldBg;
+
+
+        // Public accessors for default styles
+        public static GUIStyle DefaultWindowStyle => GetEnsuredStyle(ref _sDefaultWindowStyle);
+        public static GUIStyle DefaultSectionStyle => GetEnsuredStyle(ref _sDefaultSectionStyle);
+        public static GUIStyle DefaultTitleStyle => GetEnsuredStyle(ref _sDefaultTitleStyle);
+        public static GUIStyle DefaultLabelStyle => GetEnsuredStyle(ref _sDefaultLabelStyle);
+        public static GUIStyle DefaultButtonStyle => GetEnsuredStyle(ref _sDefaultButtonStyle);
+        public static GUIStyle DefaultToggleStyle => GetEnsuredStyle(ref _sDefaultToggleStyle);
+        public static GUIStyle DefaultTextFieldStyle => GetEnsuredStyle(ref _sDefaultTextFieldStyle);
+        public static GUIStyle DefaultTextAreaStyle => GetEnsuredStyle(ref _sDefaultTextAreaStyle); // Often same as TextField
+        public static GUIStyle DefaultHorizontalSliderStyle => GetEnsuredStyle(ref _sDefaultHorizontalSliderStyle);
+        public static GUIStyle DefaultHorizontalSliderThumbStyle => GetEnsuredStyle(ref _sDefaultHorizontalSliderThumbStyle);
+
+
+        private static GUIStyle GetEnsuredStyle(ref GUIStyle styleField)
+        {
+            EnsureStylesInitialized();
+            return styleField;
+        }
+
+        private static Texture2D MakeTex(int width, int height, Color col)
+        {
+            Color[] pix = new Color[width * height];
+            for (int i = 0; i < pix.Length; ++i) pix[i] = col;
+            Texture2D result = new Texture2D(width, height) { hideFlags = HideFlags.HideAndDontSave };
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
+        }
 
         /// <summary>
-        /// The delegate for the method that will draw the content inside the window.
-        /// It receives the window ID as a parameter.
+        /// Initializes all default GUIStyles. Call this once during your mod's startup.
         /// </summary>
+        public static void EnsureStylesInitialized()
+        {
+            if (_sStylesInitialized) return;
+
+            // --- Create Textures ---
+            _sTexWindowBg = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.15f, 0.97f)); // Darker, slightly blueish
+            _sTexSectionBg = MakeTex(2, 2, new Color(0.18f, 0.18f, 0.22f, 0.95f)); // Slightly lighter section
+            _sTexTextFieldBg = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+
+            _sTexButtonNormal = MakeTex(2, 2, new Color(0.25f, 0.25f, 0.3f, 1f));
+            _sTexButtonHover = MakeTex(2, 2, new Color(0.35f, 0.35f, 0.4f, 1f));
+            _sTexButtonActive = MakeTex(2, 2, new Color(0.2f, 0.4f, 0.5f, 1f)); // Active/Clicked
+
+            _sTexToggleNormalOff = MakeTex(2, 2, new Color(0.25f, 0.25f, 0.3f, 1f)); // Similar to button
+            _sTexToggleHoverOff = MakeTex(2, 2, new Color(0.35f, 0.35f, 0.4f, 1f));
+            _sTexToggleNormalOn = MakeTex(2, 2, new Color(0.2f, 0.5f, 0.3f, 1f));  // Greenish when ON
+            _sTexToggleHoverOn = MakeTex(2, 2, new Color(0.25f, 0.6f, 0.35f, 1f));
+
+
+            // --- Create Styles ---
+            _sDefaultWindowStyle = new GUIStyle(GUI.skin.window)
+            {
+                normal = { background = _sTexWindowBg, textColor = Color.white },
+                active = { background = _sTexWindowBg, textColor = Color.white }, // Keep consistent
+                focused = { background = _sTexWindowBg, textColor = Color.white },
+                hover = { background = _sTexWindowBg, textColor = Color.white },
+                onNormal = { background = _sTexWindowBg, textColor = Color.white },
+                onActive = { background = _sTexWindowBg, textColor = Color.white },
+                onFocused = { background = _sTexWindowBg, textColor = Color.white },
+                onHover = { background = _sTexWindowBg, textColor = Color.white },
+                border = new RectOffset(6, 6, 6, 6),
+                padding = new RectOffset(8, 8, 22, 8) // Top padding for title
+            };
+            _sDefaultWindowStyle.name = "PLWare.DefaultWindow";
+
+            _sDefaultSectionStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = _sTexSectionBg },
+                border = new RectOffset(4, 4, 4, 4),
+                padding = new RectOffset(5, 5, 5, 5)
+            };
+            _sDefaultSectionStyle.name = "PLWare.DefaultSection";
+
+            _sDefaultLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) }, // Slightly off-white
+                padding = new RectOffset(2, 2, 3, 3) // More balanced padding
+            };
+            _sDefaultLabelStyle.name = "PLWare.DefaultLabel";
+
+            _sDefaultTitleStyle = new GUIStyle(_sDefaultLabelStyle) // Inherit from label
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(5, 5, 5, 5)
+            };
+            _sDefaultTitleStyle.name = "PLWare.DefaultTitle";
+
+
+            _sDefaultButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                normal = { background = _sTexButtonNormal, textColor = Color.white },
+                hover = { background = _sTexButtonHover, textColor = Color.white },
+                active = { background = _sTexButtonActive, textColor = new Color(0.8f, 1f, 1f, 1f) }, // Cyanish text on active
+                border = new RectOffset(3, 3, 3, 3),
+                padding = new RectOffset(8, 8, 6, 6),
+                alignment = TextAnchor.MiddleCenter
+            };
+            _sDefaultButtonStyle.name = "PLWare.DefaultButton";
+
+            _sDefaultToggleStyle = new GUIStyle(GUI.skin.toggle) // Base on skin.toggle for checkbox area
+            {
+                normal = { background = _sTexToggleNormalOff, textColor = Color.white },
+                hover = { background = _sTexToggleHoverOff, textColor = Color.white },
+                active = { background = _sTexButtonActive, textColor = Color.cyan }, // When clicking
+                onNormal = { background = _sTexToggleNormalOn, textColor = Color.white }, // ON state
+                onHover = { background = _sTexToggleHoverOn, textColor = Color.white },   // ON state + hover
+                onActive = { background = _sTexToggleNormalOn, textColor = Color.cyan },  // ON state + click
+                border = new RectOffset(3, 3, 3, 3),
+                padding = new RectOffset(20, 4, 4, 4) // Left padding for toggle box
+            };
+            _sDefaultToggleStyle.name = "PLWare.DefaultToggle";
+
+            _sDefaultTextFieldStyle = new GUIStyle(GUI.skin.textField)
+            {
+                normal = { background = _sTexTextFieldBg, textColor = Color.white },
+                hover = { background = _sTexTextFieldBg, textColor = Color.white }, // Keep consistent or slightly change bg
+                active = { background = _sTexTextFieldBg, textColor = Color.white },
+                focused = { background = _sTexTextFieldBg, textColor = Color.white }, // Often highlighted with border by engine
+                border = new RectOffset(3, 3, 3, 3),
+                padding = new RectOffset(5, 5, 5, 5)
+            };
+            _sDefaultTextFieldStyle.name = "PLWare.DefaultTextField";
+            _sDefaultTextAreaStyle = new GUIStyle(_sDefaultTextFieldStyle) { wordWrap = true }; // Inherit and set wordwrap
+            _sDefaultTextAreaStyle.name = "PLWare.DefaultTextArea";
+
+            // Sliders are often fine with GUI.skin defaults or need more complex textures
+            _sDefaultHorizontalSliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
+            _sDefaultHorizontalSliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
+            _sDefaultHorizontalSliderStyle.name = "PLWare.DefaultHSlider";
+            _sDefaultHorizontalSliderThumbStyle.name = "PLWare.DefaultHSliderThumb";
+
+            _sStylesInitialized = true;
+        }
+
+        // --- Instance Members ---
         public Action<int> DrawWindowContent { get; set; }
-
-        // --- Dragging Configuration ---
-        /// <summary>
-        /// Gets or sets whether the window is draggable.
-        /// </summary>
         public bool IsDraggable { get; set; } = true;
+        public Rect DraggableArea { get; set; }
 
-        /// <summary>
-        /// Defines the area (in local window coordinates) that can be used to drag the window.
-        /// Default is the top 20 pixels, spanning the full width.
-        /// </summary>
-        public Rect DraggableArea { get; set; } = new Rect(0, 0, float.MaxValue, 20);
-
-        // --- Resizing Configuration & State ---
         public bool IsResizable { get; set; } = true;
         public float ResizeBorderThickness { get; set; } = 8f;
-        public float MinWindowWidth { get; set; } = 200f;
-        public float MinWindowHeight { get; set; } = 150f;
+        public float MinWindowWidth { get; set; } = 100f; // Adjusted min width
+        public float MinWindowHeight { get; set; } = 80f; // Adjusted min height
 
         private enum ResizeDirection { None, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight }
-
         private bool _isCurrentlyResizing;
         private ResizeDirection _currentResizeDirection = ResizeDirection.None;
         private Vector2 _resizeDragStartMousePosition;
         private Rect _resizeDragStartWindowRect;
 
-        private static Texture2D MakeTex(int width, int height, Color col)
-        {
-            Color[] pix = new Color[width * height];
-            for (int i = 0; i < pix.Length; ++i)
-            {
-                pix[i] = col;
-            }
-
-            Texture2D result = new Texture2D(width, height);
-            result.SetPixels(pix);
-            result.Apply();
-            return result;
-        }
-        
-        internal static void InitiateStyle() // Pass the image or load it here
-        {
-            #region Styles
-            DefaultWindowStyle = new GUIStyle(GUI.skin.window)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onFocused = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-            };
-
-            DefaultSectionStyle = new GUIStyle(GUI.skin.box)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                focused = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                hover = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                onFocused = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f)) },
-            };
-
-            DefaultButtonStyle = new GUIStyle(GUI.skin.button)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 0.5f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                hover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-            };
-            
-            DefaultToggleStyle = new GUIStyle(GUI.skin.toggle)
-            {
-                normal = { background = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f)) },
-                onNormal = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 0.5f)) },
-                onHover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                hover = { background = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f)) },
-                active = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-                onActive = { background = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f)) },
-            };
-            #endregion
-            #region TextColors for Window Style
-            if (DefaultWindowStyle != null) // Check if it was initialized
-            {
-                DefaultWindowStyle.normal.textColor = Color.white;
-                DefaultWindowStyle.active.textColor = Color.white;
-                DefaultWindowStyle.focused.textColor = Color.white;
-                DefaultWindowStyle.hover.textColor = Color.white;
-                DefaultWindowStyle.onNormal.textColor = Color.white;
-                DefaultWindowStyle.onHover.textColor = Color.white;
-                DefaultWindowStyle.onActive.textColor = Color.white;
-                DefaultWindowStyle.onFocused.textColor = Color.white;
-            }
-            #endregion
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Window"/> class.
-        /// </summary>
-        /// <param name="id">A unique ID for the window.</param>
-        /// <param name="title">The title displayed on the window.</param>
-        /// <param name="initialRect">The initial position and size of the window.</param>
-        /// <param name="drawContentDelegate">The method that will be called to draw the window's content.</param>
-        /// <param name="initialVisibility">Whether the window is visible initially.</param>
         public Window(int id, string title, Rect initialRect, Action<int> drawContentDelegate, bool initialVisibility = false)
         {
+            EnsureStylesInitialized(); // Ensure defaults are ready when a window is created
             ID = id;
             Title = title;
             CurrentRect = initialRect;
             DrawWindowContent = drawContentDelegate;
             IsVisible = initialVisibility;
-            Style = DefaultWindowStyle; // Will default to GUI.skin.window if not set
+            // Default DraggableArea: full width, 20px height.
+            // If CurrentRect isn't set yet, or can change, this might need to be dynamic or set later.
+            // For now, GUI.DragWindow can take a Rect that's effectively the title bar area.
+            DraggableArea = new Rect(0, 0, float.MaxValue, DefaultWindowStyle?.padding.top ?? 22f);
         }
 
-        /// <summary>
-        /// Renders the window if it's visible. This should be called from an OnGUI method.
-        /// </summary>
         public void Render()
         {
             if (!IsVisible) return;
-            GUIStyle currentStyle = Style;
-            Action<int> windowFunctionDelegate = windowID => { InternalWindowFunction(windowID); };
-            CurrentRect = GUI.Window(ID, CurrentRect, windowFunctionDelegate, Title, currentStyle);
+            GUIStyle windowStyleToUse = Style ?? DefaultWindowStyle ?? GUI.skin.window;
+            CurrentRect = GUI.Window(ID, CurrentRect, InternalWindowFunction, Title, windowStyleToUse);
         }
 
-        /// <summary>
-        /// The internal function passed to GUI.Window. Handles content drawing, resizing, and dragging.
-        /// </summary>
         private void InternalWindowFunction(int windowId)
         {
-            if (IsResizable)
-            {
-                HandleResizeInput();
-            }
-            
+            if (IsResizable) HandleResizeInput();
             DrawWindowContent?.Invoke(windowId);
-            
             if (IsDraggable && !_isCurrentlyResizing)
             {
-                GUI.DragWindow(DraggableArea);
+                // Adjust DraggableArea width if it's float.MaxValue
+                Rect actualDraggableArea = DraggableArea;
+                if (actualDraggableArea.width == float.MaxValue)
+                    actualDraggableArea.width = CurrentRect.width - actualDraggableArea.x;
+
+                GUI.DragWindow(actualDraggableArea);
             }
         }
 
-        /// <summary>
-        /// Handles mouse input for resizing the window. Called within InternalWindowFunction.
-        /// </summary>
-        private void HandleResizeInput()
+        private void HandleResizeInput() // (Logic largely unchanged, ensure it uses CurrentRect)
         {
             Event e = Event.current;
             Vector2 mousePosInWindow = e.mousePosition;
-            Rect localBounds = new Rect(0, 0, CurrentRect.width, CurrentRect.height);
 
-            Rect topEdge = new Rect(ResizeBorderThickness, 0, localBounds.width - 2 * ResizeBorderThickness, ResizeBorderThickness);
-            Rect bottomEdge = new Rect(ResizeBorderThickness, localBounds.height - ResizeBorderThickness, localBounds.width - 2 * ResizeBorderThickness, ResizeBorderThickness);
-            Rect leftEdge = new Rect(0, ResizeBorderThickness, ResizeBorderThickness, localBounds.height - 2 * ResizeBorderThickness);
-            Rect rightEdge = new Rect(localBounds.width - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness, localBounds.height - 2 * ResizeBorderThickness);
+            float width = CurrentRect.width; // Use current width/height for zones
+            float height = CurrentRect.height;
 
+            Rect topEdge = new Rect(ResizeBorderThickness, 0, width - 2 * ResizeBorderThickness, ResizeBorderThickness);
+            Rect bottomEdge = new Rect(ResizeBorderThickness, height - ResizeBorderThickness, width - 2 * ResizeBorderThickness, ResizeBorderThickness);
+            // ... (rest of the zone definitions are the same) ...
+            Rect leftEdge = new Rect(0, ResizeBorderThickness, ResizeBorderThickness, height - 2 * ResizeBorderThickness);
+            Rect rightEdge = new Rect(width - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness, height - 2 * ResizeBorderThickness);
             Rect topLeftCorner = new Rect(0, 0, ResizeBorderThickness, ResizeBorderThickness);
-            Rect topRightCorner = new Rect(localBounds.width - ResizeBorderThickness, 0, ResizeBorderThickness, ResizeBorderThickness);
-            Rect bottomLeftCorner = new Rect(0, localBounds.height - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness);
-            Rect bottomRightCorner = new Rect(localBounds.width - ResizeBorderThickness, localBounds.height - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness);
+            Rect topRightCorner = new Rect(width - ResizeBorderThickness, 0, ResizeBorderThickness, ResizeBorderThickness);
+            Rect bottomLeftCorner = new Rect(0, height - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness);
+            Rect bottomRightCorner = new Rect(width - ResizeBorderThickness, height - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness);
+
 
             if (e.type == EventType.MouseDown && e.button == 0 && !_isCurrentlyResizing)
             {
@@ -203,77 +266,47 @@ namespace Meowijuana_SARS.API.Meowzers
                 if (_currentResizeDirection != ResizeDirection.None)
                 {
                     _isCurrentlyResizing = true;
-                    _resizeDragStartMousePosition = GUIUtility.GUIToScreenPoint(mousePosInWindow);
+                    _resizeDragStartMousePosition = GUIUtility.GUIToScreenPoint(e.mousePosition); // Use original event mouse pos
                     _resizeDragStartWindowRect = CurrentRect;
                     e.Use();
                 }
             }
-            else if (e.type == EventType.MouseUp && e.button == 0)
+            else if (e.type == EventType.MouseUp && e.button == 0 && _isCurrentlyResizing) // only if resizing
             {
-                if (_isCurrentlyResizing)
-                {
-                    _isCurrentlyResizing = false;
-                    _currentResizeDirection = ResizeDirection.None;
-                    e.Use();
-                }
+                _isCurrentlyResizing = false;
+                _currentResizeDirection = ResizeDirection.None;
+                e.Use();
             }
             else if (e.type == EventType.MouseDrag && _isCurrentlyResizing && e.button == 0)
             {
-                Vector2 currentScreenMousePos = GUIUtility.GUIToScreenPoint(mousePosInWindow);
+                Vector2 currentScreenMousePos = GUIUtility.GUIToScreenPoint(e.mousePosition); // Use original event mouse pos
                 Vector2 delta = currentScreenMousePos - _resizeDragStartMousePosition;
                 Rect newRect = _resizeDragStartWindowRect;
 
-                if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft)
-                    newRect.xMin += delta.x;
-                if (_currentResizeDirection == ResizeDirection.Right || _currentResizeDirection == ResizeDirection.TopRight || _currentResizeDirection == ResizeDirection.BottomRight)
-                    newRect.xMax += delta.x;
-                if (_currentResizeDirection == ResizeDirection.Top || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.TopRight)
-                    newRect.yMin += delta.y;
-                if (_currentResizeDirection == ResizeDirection.Bottom || _currentResizeDirection == ResizeDirection.BottomLeft || _currentResizeDirection == ResizeDirection.BottomRight)
-                    newRect.yMax += delta.y;
-                
+                // Apply deltas (same logic as before)
+                if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft) newRect.xMin = _resizeDragStartWindowRect.xMin + delta.x;
+                if (_currentResizeDirection == ResizeDirection.Right || _currentResizeDirection == ResizeDirection.TopRight || _currentResizeDirection == ResizeDirection.BottomRight) newRect.xMax = _resizeDragStartWindowRect.xMax + delta.x;
+                if (_currentResizeDirection == ResizeDirection.Top || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.TopRight) newRect.yMin = _resizeDragStartWindowRect.yMin + delta.y;
+                if (_currentResizeDirection == ResizeDirection.Bottom || _currentResizeDirection == ResizeDirection.BottomLeft || _currentResizeDirection == ResizeDirection.BottomRight) newRect.yMax = _resizeDragStartWindowRect.yMax + delta.y;
+
+                // Enforce min width/height (same logic)
                 if (newRect.width < MinWindowWidth)
                 {
-                    if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft)
-                        newRect.x = newRect.xMax - MinWindowWidth;
-                    newRect.width = MinWindowWidth;
+                    if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft) newRect.x = newRect.xMax - MinWindowWidth;
+                    else newRect.width = MinWindowWidth;
                 }
                 if (newRect.height < MinWindowHeight)
                 {
-                    if (_currentResizeDirection == ResizeDirection.Top || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.TopRight)
-                        newRect.y = newRect.yMax - MinWindowHeight;
-                    newRect.height = MinWindowHeight;
+                    if (_currentResizeDirection == ResizeDirection.Top || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.TopRight) newRect.y = newRect.yMax - MinWindowHeight;
+                    else newRect.height = MinWindowHeight;
                 }
-
                 CurrentRect = newRect;
                 e.Use();
             }
         }
-
-        /// <summary>
-        /// Shows the window.
-        /// </summary>
         public void Show() => IsVisible = true;
-
-        /// <summary>
-        /// Hides the window.
-        /// </summary>
         public void Hide() => IsVisible = false;
-
-        /// <summary>
-        /// Toggles the visibility of the window.
-        /// </summary>
         public void ToggleVisibility() => IsVisible = !IsVisible;
-
-        /// <summary>
-        /// Allows external modification of the window's Rect (e.g., for centering).
-        /// </summary>
-        public void SetRect(Rect newRect)
-        {
-            if (!_isCurrentlyResizing)
-            {
-                CurrentRect = newRect;
-            }
-        }
+        public void SetRect(Rect newRect) { if (!_isCurrentlyResizing) CurrentRect = newRect; }
     }
 }

@@ -1,14 +1,22 @@
-﻿using System;
+﻿// Logic.cs
+using System;
 using UnityEngine;
 
-namespace Meowijuana_SARS.API.Meowzers
+namespace Meowijuana_ButtonAPI.API.Meowzers
 {
     public static class Logic
     {
+        private static GUIStyle GetEffectiveStyle(GUIStyle preferredStyle, Func<GUIStyle> defaultStyleProvider)
+        {
+            // Ensure Window's static styles are initialized before trying to access them.
+            Window.EnsureStylesInitialized();
+            return preferredStyle ?? defaultStyleProvider() ?? new GUIStyle(); // Fallback to new GUIStyle if default is somehow null
+        }
+
         // --- Button ---
         public static bool AddButtonOnClick(string text, Action onClick, GUIStyle style = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentStyle = style ?? GUI.skin.button;
+            GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultButtonStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
             if (GUILayout.Button(text, currentStyle, options))
             {
@@ -20,7 +28,7 @@ namespace Meowijuana_SARS.API.Meowzers
 
         public static bool AddButton(string text, GUIStyle style = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentStyle = style ?? GUI.skin.button;
+            GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultButtonStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
             return GUILayout.Button(text, currentStyle, options);
         }
@@ -28,7 +36,7 @@ namespace Meowijuana_SARS.API.Meowzers
         // --- Toggle ---
         public static bool AddToggle(string text, ref bool toggleState, GUIStyle style = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentStyle = style ?? GUI.skin.toggle;
+            GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultToggleStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
             bool previousState = toggleState;
             toggleState = GUILayout.Toggle(toggleState, text, currentStyle, options);
@@ -36,107 +44,95 @@ namespace Meowijuana_SARS.API.Meowzers
         }
 
         // --- Slider ---
-        // Horizontal Slider (float)
-        public static bool AddSlider(string label, ref float sliderValue, float minValue, float maxValue, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
+        public static bool AddSlider(string label, ref float sliderValue, float minValue, float maxValue, GUIStyle labelStyle = null, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
         {
             float previousValue = sliderValue;
-            GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+            GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
+            GUIStyle currentSliderStyle = GetEffectiveStyle(sliderStyle, () => Window.DefaultHorizontalSliderStyle);
+            GUIStyle currentThumbStyle = GetEffectiveStyle(thumbStyle, () => Window.DefaultHorizontalSliderThumbStyle);
+
+            GUILayout.BeginHorizontal();
             if (!string.IsNullOrEmpty(label))
             {
                 string labelText = showValue ? $"{label} ({sliderValue:F2})" : label;
-                GUILayout.Label(labelText, new[] { GUILayout.Width(150) });
+                GUILayout.Label(labelText, currentLabelStyle, GUILayout.Width(150)); // Consider making width configurable
             }
-
-            GUIStyle currentSliderStyle = sliderStyle ?? GUI.skin.horizontalSlider;
-            GUIStyle currentThumbStyle = thumbStyle ?? GUI.skin.horizontalSliderThumb;
-            if (options == null) options = Array.Empty<GUILayoutOption>();
-
+            if (options == null || options.Length == 0) options = new[] { GUILayout.ExpandWidth(true) };
             sliderValue = GUILayout.HorizontalSlider(sliderValue, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
             GUILayout.EndHorizontal();
             return !Mathf.Approximately(sliderValue, previousValue);
         }
 
-        // Horizontal Slider (int)
-        public static bool AddHSlider(string label, ref int sliderValue, int minValue, int maxValue, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
+        public static bool AddHSlider(string label, ref int sliderValue, int minValue, int maxValue, GUIStyle labelStyle = null, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
         {
             int previousValue = sliderValue;
             float tempFloat = sliderValue;
+            // (Uses same style logic as float slider)
+            GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
+            GUIStyle currentSliderStyle = GetEffectiveStyle(sliderStyle, () => Window.DefaultHorizontalSliderStyle);
+            GUIStyle currentThumbStyle = GetEffectiveStyle(thumbStyle, () => Window.DefaultHorizontalSliderThumbStyle);
 
-            GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+            GUILayout.BeginHorizontal();
             if (!string.IsNullOrEmpty(label))
             {
                 string labelText = showValue ? $"{label} ({sliderValue})" : label;
-                GUILayout.Label(labelText, new[] { GUILayout.Width(150) });
+                GUILayout.Label(labelText, currentLabelStyle, GUILayout.Width(150));
             }
-
-            GUIStyle currentSliderStyle = sliderStyle ?? GUI.skin.horizontalSlider;
-            GUIStyle currentThumbStyle = thumbStyle ?? GUI.skin.horizontalSliderThumb;
-            if (options == null) options = Array.Empty<GUILayoutOption>();
-
+            if (options == null || options.Length == 0) options = new[] { GUILayout.ExpandWidth(true) };
             tempFloat = GUILayout.HorizontalSlider(tempFloat, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
             sliderValue = Mathf.RoundToInt(tempFloat);
             GUILayout.EndHorizontal();
-
             return sliderValue != previousValue;
         }
 
         // --- Text Field / Text Area ---
-        public static bool AddTextField(string label, ref string textValue, GUIStyle style = null, params GUILayoutOption[] options)
+        public static bool AddTextField(string label, ref string textValue, GUIStyle labelStyle = null, GUIStyle fieldStyle = null, params GUILayoutOption[] options)
         {
             string previousValue = textValue;
-            if (!string.IsNullOrEmpty(label))
-                GUILayout.Label(label, Array.Empty<GUILayoutOption>());
-            GUIStyle currentStyle = style ?? GUI.skin.textField;
+            GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
+            GUIStyle currentFieldStyle = GetEffectiveStyle(fieldStyle, () => Window.DefaultTextFieldStyle);
+
+            if (!string.IsNullOrEmpty(label)) GUILayout.Label(label, currentLabelStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
-            textValue = GUILayout.TextField(textValue, currentStyle, options);
+            textValue = GUILayout.TextField(textValue, currentFieldStyle, options);
             return textValue != previousValue;
         }
 
-        public static bool AddTextArea(string label, ref string textValue, GUIStyle style = null, params GUILayoutOption[] options)
+        public static bool AddTextArea(string label, ref string textValue, GUIStyle labelStyle = null, GUIStyle areaStyle = null, params GUILayoutOption[] options)
         {
             string previousValue = textValue;
-            if (!string.IsNullOrEmpty(label))
-                GUILayout.Label(label, Array.Empty<GUILayoutOption>());
-            GUIStyle currentStyle = style ?? GUI.skin.textArea;
+            GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
+            GUIStyle currentAreaStyle = GetEffectiveStyle(areaStyle, () => Window.DefaultTextAreaStyle);
+
+            if (!string.IsNullOrEmpty(label)) GUILayout.Label(label, currentLabelStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
-            textValue = GUILayout.TextArea(textValue, currentStyle, options);
+            textValue = GUILayout.TextArea(textValue, currentAreaStyle, options);
             return textValue != previousValue;
         }
 
         // --- Label ---
         public static void AddLabel(string text, GUIStyle style = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentStyle = style ?? GUI.skin.label;
+            GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultLabelStyle);
             if (options == null) options = Array.Empty<GUILayoutOption>();
             GUILayout.Label(text, currentStyle, options);
         }
 
         // --- SubSection Helpers ---
-        private static GUIStyle _defaultBoxStyle;
-        private static GUIStyle _defaultTitleStyle;
-
-        public static void InitializeDefaultSubSectionStyles(GUIStyle boxStyle, GUIStyle titleStyle)
-        {
-            _defaultBoxStyle = boxStyle;
-            _defaultTitleStyle = titleStyle;
-        }
-
+        // These can now use the static defaults from Window class more easily
         public static void BeginSubSection(string title = null, GUIStyle boxStyle = null, GUIStyle titleStyle = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentBoxStyle = boxStyle ?? _defaultBoxStyle ?? GUI.skin.box;
-            GUIStyle currentTitleStyle = titleStyle ?? _defaultTitleStyle ?? new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } };
+            GUIStyle currentBoxStyle = GetEffectiveStyle(boxStyle, () => Window.DefaultSectionStyle);
+            GUIStyle currentTitleStyle = GetEffectiveStyle(titleStyle, () => Window.DefaultTitleStyle);
 
             GUILayoutOption[] verticalOptions = (options != null && options.Length > 0) ? options : new[] { GUILayout.ExpandWidth(true) };
-            /*if (verticalOptions == null) verticalOptions = new GUILayoutOption[0];*/
-
             GUILayout.BeginVertical(currentBoxStyle, verticalOptions);
             if (!string.IsNullOrEmpty(title))
             {
-                AddLabel(title, currentTitleStyle, GUILayout.ExpandWidth(true));
+                AddLabel(title, currentTitleStyle, GUILayout.ExpandWidth(true)); // Use AddLabel for consistency
                 GUILayout.Space(5);
             }
         }
-
         public static void EndSubSection()
         {
             GUILayout.EndVertical();
