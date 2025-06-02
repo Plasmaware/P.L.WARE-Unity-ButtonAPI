@@ -66,14 +66,37 @@ namespace Meowijuana_ButtonAPI_MONO.Meowzers
             if (_sStylesInitialized) return;
 
             // --- Create Textures (using colors from original InitiateStyle) ---
-            _sTexWindowBg = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f));
-            _sTexSectionBg = MakeTex(2, 2, new Color(0.05f, 0.05f, 0.05f, 1f));
-            _sTexButtonNormal = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f));      // Original Button normal
-            _sTexButtonHover = MakeTex(2, 2, new Color(0.2f, 0.2f, 0.2f, 1f));  // Original Button hover
-            _sTexButtonActive = MakeTex(2, 2, new Color(1f, 1f, 1f, 1f));     // Original Button active
-            _sTexToggleNormal = MakeTex(2, 2, new Color(0f, 0f, 0f, 1f));     // Original Toggle normal
-            _sTexToggleOnNormal = MakeTex(2, 2, new Color(1f, 1f, 1f, 0.5f)); // Original Toggle onNormal
-            _sTexTextFieldBg = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.95f)); // General dark field BG
+            Color grayDeepPlumBlack = new Color(0.0425f, 0.0425f, 0.0425f, 0.92f);
+
+            // Original: darkRosewood = new Color(0.15f, 0.05f, 0.1f, 1f);
+            Color grayDarkRosewood = new Color(0.0856f, 0.0856f, 0.0856f, 1f);
+
+            // Original: charcoalPinkHint = new Color(0.2f, 0.1f, 0.15f, 1f);
+            Color grayCharcoalPinkHint = new Color(0.1356f, 0.1356f, 0.1356f, 1f);
+
+            // Original: vibrantFuchsia = new Color(1f, 0.15f, 0.6f, 1f);
+            Color grayVibrantFuchsia = new Color(0.45545f, 0.45545f, 0.45545f, 1f); // Medium Gray
+
+            // Original: hotPinkHover = new Color(1f, 0.35f, 0.7f, 1f);
+            Color grayHotPinkHover = new Color(0.58425f, 0.58425f, 0.58425f, 1f); // Lighter Medium Gray
+
+            // Original: electricPinkActive = new Color(1f, 0.05f, 0.5f, 1f);
+            Color grayElectricPinkActive = new Color(0.38535f, 0.38535f, 0.38535f, 1f); // Darker Medium Gray
+
+            _sTexWindowBg = MakeTex(2, 2, grayDeepPlumBlack);
+            _sTexSectionBg = MakeTex(2, 2, grayDarkRosewood);
+
+            _sTexButtonNormal = MakeTex(2, 2, grayCharcoalPinkHint);
+            _sTexButtonOnNormal = MakeTex(2, 2, grayVibrantFuchsia);    // Was the main "ON" pink, now a medium gray
+            _sTexButtonHover = MakeTex(2, 2, grayHotPinkHover);         // Was brighter pink hover, now a lighter medium gray
+            _sTexButtonActive = MakeTex(2, 2, grayElectricPinkActive);  // Was intense pink, now a darker medium gray
+
+            _sTexToggleNormal = MakeTex(2, 2, grayCharcoalPinkHint);
+            _sTexToggleOnNormal = MakeTex(2, 2, grayVibrantFuchsia);    // "ON" state will be medium gray
+            _sTexToggleHover = MakeTex(2, 2, grayHotPinkHover);         // Hover will be lighter medium gray
+            _sTexToggleActive = MakeTex(2, 2, grayElectricPinkActive);  // Active/pressed will be darker medium gray
+
+            _sTexTextFieldBg = MakeTex(2, 2, grayDarkRosewood);         // Consistent with section backgrounds
 
             // --- Window Style ---
             _sDefaultWindowStyle = new GUIStyle(GUI.skin.window)
