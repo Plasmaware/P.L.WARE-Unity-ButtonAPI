@@ -7,6 +7,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers // Assuming this is the correct name
     {
         private static GUIStyle GetEffectiveStyle(GUIStyle preferredStyle, Func<GUIStyle> defaultStyleProvider)
         {
+            // Now this refers to Meowijuana_SARS.API.Meowzers.Window
             Window.EnsureStylesInitialized();
             return preferredStyle ?? defaultStyleProvider() ?? new GUIStyle();
         }
