@@ -128,16 +128,24 @@ namespace Meowijuana_ButtonAPI.API.Meowzers // Assuming this is the correct name
         }
 
         // --- SubSection Helpers ---
+        // Inside Meowijuana_ButtonAPI.API.Meowzers.Logic
         public static void BeginSubSection(string title = null, GUIStyle boxStyle = null, GUIStyle titleStyle = null, params GUILayoutOption[] options)
         {
-            GUIStyle currentBoxStyle = GetEffectiveStyle(boxStyle, () => Window.DefaultSectionStyle);
-            GUIStyle currentTitleStyle = GetEffectiveStyle(titleStyle, () => Window.DefaultTitleStyle);
+            // Ensure styles are initialized (this is good)
+            Meowijuana_ButtonAPI.API.Meowzers.Window.EnsureStylesInitialized(); // Added this for robustness
 
+            GUIStyle currentBoxStyle = GetEffectiveStyle(boxStyle, () => Meowijuana_ButtonAPI.API.Meowzers.Window.DefaultSectionStyle);
+            GUIStyle currentTitleStyle = GetEffectiveStyle(titleStyle, () => Meowijuana_ButtonAPI.API.Meowzers.Window.DefaultTitleStyle);
+
+            // This is where the GUILayoutOption array for BeginVertical is determined
             GUILayoutOption[] verticalOptions = (options != null && options.Length > 0) ? options : new[] { GUILayout.ExpandWidth(true) };
+
+            // THE CALL CAUSING THE ERROR ACCORDING TO THE STACK TRACE
             GUILayout.BeginVertical(currentBoxStyle, verticalOptions);
+
             if (!string.IsNullOrEmpty(title))
             {
-                // This AddLabel call correctly passes options (or GUILayout.ExpandWidth(true) if options are null/empty)
+                // AddLabel itself contains GUILayout.Label
                 AddLabel(title, currentTitleStyle, GUILayout.ExpandWidth(true));
                 GUILayout.Space(5);
             }
