@@ -1,104 +1,152 @@
 ﻿using UnityEngine;
 using System; // For Action
 using MelonLoader;
-using Meowijuana_SARS.API.Meowzers; // Required for MelonLoader mods
+using Meowijuana_ButtonAPI.API.Menu;
+// Use the namespace where your Window class (with static styles) and Logic class are defined
+using Meowijuana_ButtonAPI.API.Meowzers;
 
-namespace Meowijuana_SARS.API.Menu;
-
-public class Manager
+namespace Meowijuana_ButtonAPI.API.Menu // This namespace is for the Manager class itself
 {
-    public Window _mainWindow;
-    public Watermark _watermark;
-
-    // State for UI elements
-    private bool _feature1Enabled = false;
-    private float _speedValue = 10f;
-    private int _itemCount = 5;
-    private string _playerName = "Hero";
-    private Vector2 _scrollPosition = Vector2.zero;
-
-    public void _initialize()
+    public class Manager
     {
-        int mainWindowId = "MyMainWindowMelon".GetHashCode();
+        // Use the Window class from the correct namespace
+        public Window _mainWindow;
+        public Watermark _watermark; // Assuming Watermark is also in Meowijuana_ButtonAPI.API.Meowzers
 
-        _mainWindow = new Window(
-            id: mainWindowId,
-            title: "Title",
-            initialRect: new Rect((Screen.width - 1005) / 2, // x position (centered horizontally)
-                (Screen.height - (689 + (1 * 40))) / 2, // y position (centered vertically)
-                1005, // width
-                689 + (1 * 40)),
-            drawContentDelegate: DrawMainWindowContent,
-            initialVisibility: false
-        );
+        // State for UI elements
+        private bool _feature1Enabled = false;
+        private float _speedValue = 10f;
+        private int _itemCount = 5; // Unused in current DrawMainWindowContent
+        private string _playerName = "Hero";
+        private Vector2 _scrollPosition = Vector2.zero; // Unused in current DrawMainWindowContent
 
-        _mainWindow.IsResizable = true;
-        _mainWindow.IsDraggable = true;
-
-        _watermark = new Watermark()
+        public void _initialize()
         {
-            CheatName = "Title",
-            Version = "Version",
-            UserName = "Username", // Or fetch dynamically if possible
-            Alignment = TextAnchor.UpperRight,
-            BackgroundColor = new Color(0, 0, 0, 1f)
-        };
-    }
-    public void _OnGUIUpdate()
-    {
-        if (Input.GetKeyDown(KeyCode.Insert))
+            int mainWindowId = "MyMainWindowMelon".GetHashCode();
+
+            _mainWindow = new Window( // Use fully qualified name or ensure correct 'using'
+                id: mainWindowId,
+                title: "Title",
+                initialRect: new Rect((Screen.width - 1005) / 2,
+                    (Screen.height - (689 + (1 * 40))) / 2,
+                    1005,
+                    689 + (1 * 40)),
+                drawContentDelegate: DrawMainWindowContent,
+                initialVisibility: false
+            );
+
+            _mainWindow.IsResizable = true;
+            _mainWindow.IsDraggable = true;
+
+            _watermark = new Watermark() // Use fully qualified name or ensure correct 'using'
+            {
+                CheatName = "Title",
+                Version = "Version",
+                UserName = "Username",
+                Alignment = TextAnchor.UpperRight,
+                BackgroundColor = new Color(0, 0, 0, 1f)
+            };
+        }
+
+        // This method handles INPUT and other non-drawing updates, called by MelonLoader's OnUpdate
+        public void HandleInputAndLogicUpdates()
         {
-            _mainWindow.ToggleVisibility();
-            _watermark.IsVisible = !_watermark.IsVisible;
+            if (Input.GetKeyDown(KeyCode.Insert))
+            {
+                _mainWindow.ToggleVisibility();
+                _watermark.IsVisible = !_watermark.IsVisible;
+            }
+
+            // Example:
+            // if (_feature1Enabled) { /* apply god mode effects to the game */ }
+            // if (_speedValue != previousSpeed) { /* update player speed in the game */ }
+        }
+
+        // This method is for DRAWING GUI, called by MelonLoader's OnGUI
+        public void RenderGUI()
+        {
+            // Ensure styles are initialized ONCE at the beginning of the actual OnGUI flow
+            // This is critical. Check Event.current.type to avoid unnecessary calls.
+            if (Event.current.type == EventType.Layout || Event.current.type == EventType.Repaint)
+            {
+                Window.EnsureStylesInitialized();
+            }
+
+            // Render the watermark (if it's visible)
+            // Watermark.Render() also contains GUI calls, so it must be here.
+            if (_watermark != null)
+            {
+                _watermark.Render();
+            }
+
+            // Render the main window (if it's visible)
+            // Window.Render() contains GUI.Window, which is a GUI call.
+            if (_mainWindow != null)
+            {
+                _mainWindow.Render();
+            }
+        }
+
+        void DrawMainWindowContent(int windowId)
+        {
+            // Use the Logic class from the correct namespace
+            // And access static styles from the correct Window class (Meowijuana_ButtonAPI.API.Meowzers.Window)
+
+            Logic.BeginSubSection("Player Cheats", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
+            if (Logic.AddToggle("Enable God Mode", ref _feature1Enabled, Window.DefaultToggleStyle))
+            {
+                MelonLogger.Msg("God Mode Toggled: " + _feature1Enabled);
+                // Add your god mode logic here (preferably in HandleInputAndLogicUpdates or a dedicated game logic method)
+            }
+            Logic.AddSlider("Movement Speed", ref _speedValue, 5f, 50f);
+            Logic.AddTextField("Player Name:", ref _playerName);
+            if (Logic.AddButtonOnClick("Reset Player Name", () => { _playerName = "DefaultPlayer"; }, Window.DefaultButtonStyle))
+            {
+                MelonLogger.Msg("Player name reset!");
+            }
+            Logic.EndSubSection();
+
+            Logic.BeginSubSection("Miscellaneous", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
+            Logic.AddLabel("Some informational text here.");
+            if (Logic.AddButton("Update Style", Window.DefaultButtonStyle))
+            {
+                MelonLogger.Msg("Style Update Performed!");
+                // To force re-initialization of styles:
+                // Meowijuana_ButtonAPI.API.Meowzers.Window._sStylesInitialized = false; // Requires _sStylesInitialized to be public/internal or have a public static setter
+                Window.EnsureStylesInitialized(); // This will re-initialize if _sStylesInitialized was set to false
+            }
+            Logic.EndSubSection();
+
+            // GUI.DragWindow(); // REMOVED - Handled by your Window class
         }
     }
-    public void Update()
+
+    public static class Caller
     {
-        // Update UI elements here
-        _watermark.Render();
+        public static Manager _uiManager;
 
-        // Render the main window (if it's visible)
-        _mainWindow.Render();
-    }
-    void DrawMainWindowContent(int windowId)
-    {
-        // Logic.AddLabel("Welcome to the Mod Menu! (MelonLoader)");
-        Logic.BeginSubSection("Player Cheats", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
-        if (Logic.AddToggle("Enable God Mode", ref _feature1Enabled, Window.DefaultToggleStyle))
+        public static void LoadMenu()
         {
-            MelonLogger.Msg("God Mode Toggled: " + _feature1Enabled);
-            // Add your god mode logic here
+            _uiManager = new Manager();
+            _uiManager._initialize();
         }
-        Logic.AddSlider("Movement Speed", ref _speedValue, 5f, 50f);
-        Logic.AddTextField("Player Name:", ref _playerName);
-        if (Logic.AddButtonOnClick("Reset Player Name", () => { _playerName = "DefaultPlayer"; }, Window.DefaultButtonStyle))
+
+        // Called by MelonLoader's OnUpdate for game logic and input
+        public static void OnUpdate()
         {
-            MelonLogger.Msg("Player name reset!");
+            if (_uiManager != null)
+            {
+                _uiManager.HandleInputAndLogicUpdates();
+            }
         }
-        Logic.EndSubSection();
 
-        Logic.BeginSubSection("Miscellaneous", Window.DefaultSectionStyle, null, GUILayout.ExpandWidth(true));
-        Logic.AddLabel("Some informational text here.");
-        if (Logic.AddButton("Update Style", Window.DefaultButtonStyle))
+        // Called by MelonLoader's OnGUI for drawing GUI
+        public static void OnGUI()
         {
-            MelonLogger.Msg("Style Update Performed!");
-            Window.InitiateStyle();
+            if (_uiManager != null)
+            {
+                _uiManager.RenderGUI();
+            }
         }
-        Logic.EndSubSection();
-
-        GUI.DragWindow(); // Typically handled by PLWindow's title bar
     }
-}
-
-public static class Caller
-{
-    private static Manager _uiManager; // Instance of your UI Manager
-    public static void LoadMenu()
-    {
-        _uiManager = new Manager();
-        _uiManager._initialize();
-    }
-
-    public static void OnUpdate() => _uiManager?._OnGUIUpdate();
-    public static void OnGUI() => _uiManager?.Update();
 }
