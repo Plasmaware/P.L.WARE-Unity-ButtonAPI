@@ -1,5 +1,4 @@
-﻿// Window.cs
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace Meowijuana_ButtonAPI.API.Meowzers
@@ -29,10 +28,11 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
         // Textures for default styles - managed statically and created once.
         // Add HideFlags.HideAndDontSave to prevent them from being saved with scenes
-        // and to ensure they are cleaned up when the AppDomain unloads.
+        // and to ensure they are cleaned up when the AppDomain unloads. This is vital for IL2CPP.
         private static Texture2D _sTexWindowBg;
         private static Texture2D _sTexSectionBg;
         private static Texture2D _sTexButtonNormal;
+        private static Texture2D _sTexButtonOnNormal; // Added declaration to match creation code
         private static Texture2D _sTexButtonHover;
         private static Texture2D _sTexButtonActive;
         private static Texture2D _sTexToggleNormalOff;
@@ -42,7 +42,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         private static Texture2D _sTexTextFieldBg;
 
 
-        // Public accessors for default styles
+        // Public accessors for default styles. IL2CPP: Static properties are fine.
         public static GUIStyle DefaultWindowStyle => GetEnsuredStyle(ref _sDefaultWindowStyle);
         public static GUIStyle DefaultSectionStyle => GetEnsuredStyle(ref _sDefaultSectionStyle);
         public static GUIStyle DefaultTitleStyle => GetEnsuredStyle(ref _sDefaultTitleStyle);
@@ -57,15 +57,15 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
         private static GUIStyle GetEnsuredStyle(ref GUIStyle styleField)
         {
-            EnsureStylesInitialized();
+            EnsureStylesInitialized(); // Ensures styles are ready.
             return styleField;
         }
 
         private static Texture2D MakeTex(int width, int height, Color col)
         {
-            Color[] pix = new Color[width * height];
+            Color[] pix = new Color[width * height]; // Small allocation, fine for one-time init.
             for (int i = 0; i < pix.Length; ++i) pix[i] = col;
-            Texture2D result = new Texture2D(width, height) { hideFlags = HideFlags.HideAndDontSave };
+            Texture2D result = new Texture2D(width, height) { hideFlags = HideFlags.HideAndDontSave }; // Crucial flag!
             result.SetPixels(pix);
             result.Apply();
             return result;
@@ -73,50 +73,45 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
         /// <summary>
         /// Initializes all default GUIStyles. Call this once during your mod's startup.
+        /// IL2CPP: Static constructors or explicit static init methods are fine.
         /// </summary>
         public static void EnsureStylesInitialized()
         {
             if (_sStylesInitialized) return;
 
             // --- Create Textures ---
+            // Color definitions are fine.
             Color grayDeepPlumBlack = new Color(0.0425f, 0.0425f, 0.0425f, 0.92f);
-
-            // Original: darkRosewood = new Color(0.15f, 0.05f, 0.1f, 1f);
             Color grayDarkRosewood = new Color(0.0856f, 0.0856f, 0.0856f, 1f);
-
-            // Original: charcoalPinkHint = new Color(0.2f, 0.1f, 0.15f, 1f);
             Color grayCharcoalPinkHint = new Color(0.1356f, 0.1356f, 0.1356f, 1f);
-
-            // Original: vibrantFuchsia = new Color(1f, 0.15f, 0.6f, 1f);
-            Color grayVibrantFuchsia = new Color(0.45545f, 0.45545f, 0.45545f, 1f); // Medium Gray
-
-            // Original: hotPinkHover = new Color(1f, 0.35f, 0.7f, 1f);
-            Color grayHotPinkHover = new Color(0.58425f, 0.58425f, 0.58425f, 1f); // Lighter Medium Gray
-
-            // Original: electricPinkActive = new Color(1f, 0.05f, 0.5f, 1f);
-            Color grayElectricPinkActive = new Color(0.38535f, 0.38535f, 0.38535f, 1f); // Darker Medium Gray
+            Color grayVibrantFuchsia = new Color(0.45545f, 0.45545f, 0.45545f, 1f);
+            Color grayHotPinkHover = new Color(0.58425f, 0.58425f, 0.58425f, 1f);
+            Color grayElectricPinkActive = new Color(0.38535f, 0.38535f, 0.38535f, 1f);
 
             _sTexWindowBg = MakeTex(2, 2, grayDeepPlumBlack);
             _sTexSectionBg = MakeTex(2, 2, grayDarkRosewood);
 
             _sTexButtonNormal = MakeTex(2, 2, grayCharcoalPinkHint);
-            _sTexButtonOnNormal = MakeTex(2, 2, grayVibrantFuchsia);    // Was the main "ON" pink, now a medium gray
-            _sTexButtonHover = MakeTex(2, 2, grayHotPinkHover);         // Was brighter pink hover, now a lighter medium gray
-            _sTexButtonActive = MakeTex(2, 2, grayElectricPinkActive);  // Was intense pink, now a darker medium gray
+            _sTexButtonOnNormal = MakeTex(2, 2, grayVibrantFuchsia); // Field _sTexButtonOnNormal declared now.
+            _sTexButtonHover = MakeTex(2, 2, grayHotPinkHover);
+            _sTexButtonActive = MakeTex(2, 2, grayElectricPinkActive);
 
-            _sTexToggleNormal = MakeTex(2, 2, grayCharcoalPinkHint);
-            _sTexToggleOnNormal = MakeTex(2, 2, grayVibrantFuchsia);    // "ON" state will be medium gray
-            _sTexToggleHover = MakeTex(2, 2, grayHotPinkHover);         // Hover will be lighter medium gray
-            _sTexToggleActive = MakeTex(2, 2, grayElectricPinkActive);  // Active/pressed will be darker medium gray
+            // **CORRECTED TEXTURE ASSIGNMENTS FOR TOGGLES**
+            // Ensure these assignments match the declared static fields used in _sDefaultToggleStyle.
+            _sTexToggleNormalOff = MakeTex(2, 2, grayCharcoalPinkHint);
+            _sTexToggleHoverOff = MakeTex(2, 2, grayHotPinkHover);
+            _sTexToggleNormalOn = MakeTex(2, 2, grayVibrantFuchsia);
+            _sTexToggleHoverOn = MakeTex(2, 2, grayHotPinkHover); // Or a different color if desired for "on hover"
 
-            _sTexTextFieldBg = MakeTex(2, 2, grayDarkRosewood);         // Consistent with section backgrounds
+            _sTexTextFieldBg = MakeTex(2, 2, grayDarkRosewood);
 
 
             // --- Create Styles ---
+            // GUIStyle creation is standard. Setting .name is good for debugging.
             _sDefaultWindowStyle = new GUIStyle(GUI.skin.window)
             {
                 normal = { background = _sTexWindowBg, textColor = Color.white },
-                active = { background = _sTexWindowBg, textColor = Color.white }, // Keep consistent
+                active = { background = _sTexWindowBg, textColor = Color.white },
                 focused = { background = _sTexWindowBg, textColor = Color.white },
                 hover = { background = _sTexWindowBg, textColor = Color.white },
                 onNormal = { background = _sTexWindowBg, textColor = Color.white },
@@ -124,7 +119,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
                 onFocused = { background = _sTexWindowBg, textColor = Color.white },
                 onHover = { background = _sTexWindowBg, textColor = Color.white },
                 border = new RectOffset(6, 6, 6, 6),
-                padding = new RectOffset(8, 8, 22, 8) // Top padding for title
+                padding = new RectOffset(8, 8, 22, 8)
             };
             _sDefaultWindowStyle.name = "PLWare.DefaultWindow";
 
@@ -138,12 +133,12 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
             _sDefaultLabelStyle = new GUIStyle(GUI.skin.label)
             {
-                normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) }, // Slightly off-white
-                padding = new RectOffset(2, 2, 3, 3) // More balanced padding
+                normal = { textColor = new Color(0.9f, 0.9f, 0.9f, 1f) },
+                padding = new RectOffset(2, 2, 3, 3)
             };
             _sDefaultLabelStyle.name = "PLWare.DefaultLabel";
 
-            _sDefaultTitleStyle = new GUIStyle(_sDefaultLabelStyle) // Inherit from label
+            _sDefaultTitleStyle = new GUIStyle(_sDefaultLabelStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
                 fontStyle = FontStyle.Bold,
@@ -157,40 +152,39 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             {
                 normal = { background = _sTexButtonNormal, textColor = Color.white },
                 hover = { background = _sTexButtonHover, textColor = Color.white },
-                active = { background = _sTexButtonActive, textColor = new Color(0.8f, 1f, 1f, 1f) }, // Cyanish text on active
+                active = { background = _sTexButtonActive, textColor = new Color(0.8f, 1f, 1f, 1f) },
                 border = new RectOffset(3, 3, 3, 3),
                 padding = new RectOffset(8, 8, 6, 6),
                 alignment = TextAnchor.MiddleCenter
             };
             _sDefaultButtonStyle.name = "PLWare.DefaultButton";
 
-            _sDefaultToggleStyle = new GUIStyle(GUI.skin.toggle) // Base on skin.toggle for checkbox area
+            _sDefaultToggleStyle = new GUIStyle(GUI.skin.toggle)
             {
-                normal = { background = _sTexToggleNormalOff, textColor = Color.white },
-                hover = { background = _sTexToggleHoverOff, textColor = Color.white },
-                active = { background = _sTexButtonActive, textColor = Color.cyan }, // When clicking
-                onNormal = { background = _sTexToggleNormalOn, textColor = Color.white }, // ON state
-                onHover = { background = _sTexToggleHoverOn, textColor = Color.white },   // ON state + hover
-                onActive = { background = _sTexToggleNormalOn, textColor = Color.cyan },  // ON state + click
+                normal = { background = _sTexToggleNormalOff, textColor = Color.white },   // Uses corrected texture assignment
+                hover = { background = _sTexToggleHoverOff, textColor = Color.white },    // Uses corrected texture assignment
+                active = { background = _sTexButtonActive, textColor = Color.cyan }, // Active (while pressing) uses button's active texture
+                onNormal = { background = _sTexToggleNormalOn, textColor = Color.white },  // Uses corrected texture assignment
+                onHover = { background = _sTexToggleHoverOn, textColor = Color.white },    // Uses corrected texture assignment
+                onActive = { background = _sTexToggleNormalOn, textColor = Color.cyan }, // Active (while ON and pressing)
                 border = new RectOffset(3, 3, 3, 3),
-                padding = new RectOffset(20, 4, 4, 4) // Left padding for toggle box
+                padding = new RectOffset(20, 4, 4, 4)
             };
             _sDefaultToggleStyle.name = "PLWare.DefaultToggle";
 
             _sDefaultTextFieldStyle = new GUIStyle(GUI.skin.textField)
             {
                 normal = { background = _sTexTextFieldBg, textColor = Color.white },
-                hover = { background = _sTexTextFieldBg, textColor = Color.white }, // Keep consistent or slightly change bg
+                hover = { background = _sTexTextFieldBg, textColor = Color.white },
                 active = { background = _sTexTextFieldBg, textColor = Color.white },
-                focused = { background = _sTexTextFieldBg, textColor = Color.white }, // Often highlighted with border by engine
+                focused = { background = _sTexTextFieldBg, textColor = Color.white },
                 border = new RectOffset(3, 3, 3, 3),
                 padding = new RectOffset(5, 5, 5, 5)
             };
             _sDefaultTextFieldStyle.name = "PLWare.DefaultTextField";
-            _sDefaultTextAreaStyle = new GUIStyle(_sDefaultTextFieldStyle) { wordWrap = true }; // Inherit and set wordwrap
+            _sDefaultTextAreaStyle = new GUIStyle(_sDefaultTextFieldStyle) { wordWrap = true };
             _sDefaultTextAreaStyle.name = "PLWare.DefaultTextArea";
 
-            // Sliders are often fine with GUI.skin defaults or need more complex textures
             _sDefaultHorizontalSliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
             _sDefaultHorizontalSliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb);
             _sDefaultHorizontalSliderStyle.name = "PLWare.DefaultHSlider";
@@ -200,14 +194,14 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         }
 
         // --- Instance Members ---
-        public Action<int> DrawWindowContent { get; set; }
+        public Action<int> DrawWindowContent { get; set; } // Delegate, IL2CPP-friendly.
         public bool IsDraggable { get; set; } = true;
         public Rect DraggableArea { get; set; }
 
         public bool IsResizable { get; set; } = true;
         public float ResizeBorderThickness { get; set; } = 8f;
-        public float MinWindowWidth { get; set; } = 100f; // Adjusted min width
-        public float MinWindowHeight { get; set; } = 80f; // Adjusted min height
+        public float MinWindowWidth { get; set; } = 100f;
+        public float MinWindowHeight { get; set; } = 80f;
 
         private enum ResizeDirection { None, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight }
         private bool _isCurrentlyResizing;
@@ -217,51 +211,52 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
         public Window(int id, string title, Rect initialRect, Action<int> drawContentDelegate, bool initialVisibility = false)
         {
-            EnsureStylesInitialized(); // Ensure defaults are ready when a window is created
+            EnsureStylesInitialized();
             ID = id;
             Title = title;
             CurrentRect = initialRect;
             DrawWindowContent = drawContentDelegate;
             IsVisible = initialVisibility;
-            // Default DraggableArea: full width, 20px height.
-            // If CurrentRect isn't set yet, or can change, this might need to be dynamic or set later.
-            // For now, GUI.DragWindow can take a Rect that's effectively the title bar area.
+            // Default DraggableArea calculation is fine.
             DraggableArea = new Rect(0, 0, float.MaxValue, DefaultWindowStyle?.padding.top ?? 22f);
         }
 
         public void Render()
         {
             if (!IsVisible) return;
+            // GUI.skin.window is a safe fallback.
             GUIStyle windowStyleToUse = Style ?? DefaultWindowStyle ?? GUI.skin.window;
-            CurrentRect = GUI.Window(ID, CurrentRect, InternalWindowFunction, Title, windowStyleToUse);
+            // GUI.Window is the standard way to draw IMGUI windows.
+            CurrentRect = UnityEngine.GUI.Window(ID, CurrentRect,
+                (UnityEngine.GUI.WindowFunction)InternalWindowFunction, Title, windowStyleToUse);
         }
 
         private void InternalWindowFunction(int windowId)
         {
+            // This is the callback for GUI.Window. Standard Unity pattern.
             if (IsResizable) HandleResizeInput();
             DrawWindowContent?.Invoke(windowId);
             if (IsDraggable && !_isCurrentlyResizing)
             {
-                // Adjust DraggableArea width if it's float.MaxValue
                 Rect actualDraggableArea = DraggableArea;
                 if (actualDraggableArea.width == float.MaxValue)
                     actualDraggableArea.width = CurrentRect.width - actualDraggableArea.x;
 
-                GUI.DragWindow(actualDraggableArea);
+                GUI.DragWindow(actualDraggableArea); // Standard Unity API.
             }
         }
 
         private void HandleResizeInput() // (Logic largely unchanged, ensure it uses CurrentRect)
         {
-            Event e = Event.current;
+            Event e = Event.current; // Standard IMGUI event handling.
             Vector2 mousePosInWindow = e.mousePosition;
 
-            float width = CurrentRect.width; // Use current width/height for zones
+            float width = CurrentRect.width;
             float height = CurrentRect.height;
 
+            // Rect calculations for resize zones are fine. Rect is a struct.
             Rect topEdge = new Rect(ResizeBorderThickness, 0, width - 2 * ResizeBorderThickness, ResizeBorderThickness);
             Rect bottomEdge = new Rect(ResizeBorderThickness, height - ResizeBorderThickness, width - 2 * ResizeBorderThickness, ResizeBorderThickness);
-            // ... (rest of the zone definitions are the same) ...
             Rect leftEdge = new Rect(0, ResizeBorderThickness, ResizeBorderThickness, height - 2 * ResizeBorderThickness);
             Rect rightEdge = new Rect(width - ResizeBorderThickness, ResizeBorderThickness, ResizeBorderThickness, height - 2 * ResizeBorderThickness);
             Rect topLeftCorner = new Rect(0, 0, ResizeBorderThickness, ResizeBorderThickness);
@@ -272,6 +267,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
             if (e.type == EventType.MouseDown && e.button == 0 && !_isCurrentlyResizing)
             {
+                // Contains checks are efficient for Rects.
                 if (topLeftCorner.Contains(mousePosInWindow)) _currentResizeDirection = ResizeDirection.TopLeft;
                 else if (topRightCorner.Contains(mousePosInWindow)) _currentResizeDirection = ResizeDirection.TopRight;
                 else if (bottomLeftCorner.Contains(mousePosInWindow)) _currentResizeDirection = ResizeDirection.BottomLeft;
@@ -285,12 +281,13 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
                 if (_currentResizeDirection != ResizeDirection.None)
                 {
                     _isCurrentlyResizing = true;
-                    _resizeDragStartMousePosition = GUIUtility.GUIToScreenPoint(e.mousePosition); // Use original event mouse pos
+                    // GUIUtility.GUIToScreenPoint is correct for converting coordinates.
+                    _resizeDragStartMousePosition = GUIUtility.GUIToScreenPoint(e.mousePosition);
                     _resizeDragStartWindowRect = CurrentRect;
-                    e.Use();
+                    e.Use(); // Consuming event is important.
                 }
             }
-            else if (e.type == EventType.MouseUp && e.button == 0 && _isCurrentlyResizing) // only if resizing
+            else if (e.type == EventType.MouseUp && e.button == 0 && _isCurrentlyResizing)
             {
                 _isCurrentlyResizing = false;
                 _currentResizeDirection = ResizeDirection.None;
@@ -298,17 +295,17 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             }
             else if (e.type == EventType.MouseDrag && _isCurrentlyResizing && e.button == 0)
             {
-                Vector2 currentScreenMousePos = GUIUtility.GUIToScreenPoint(e.mousePosition); // Use original event mouse pos
-                Vector2 delta = currentScreenMousePos - _resizeDragStartMousePosition;
+                Vector2 currentScreenMousePos = GUIUtility.GUIToScreenPoint(e.mousePosition);
+                Vector2 delta = currentScreenMousePos - _resizeDragStartMousePosition; // Vector2 operations are efficient.
                 Rect newRect = _resizeDragStartWindowRect;
 
-                // Apply deltas (same logic as before)
+                // Applying deltas.
                 if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft) newRect.xMin = _resizeDragStartWindowRect.xMin + delta.x;
                 if (_currentResizeDirection == ResizeDirection.Right || _currentResizeDirection == ResizeDirection.TopRight || _currentResizeDirection == ResizeDirection.BottomRight) newRect.xMax = _resizeDragStartWindowRect.xMax + delta.x;
                 if (_currentResizeDirection == ResizeDirection.Top || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.TopRight) newRect.yMin = _resizeDragStartWindowRect.yMin + delta.y;
                 if (_currentResizeDirection == ResizeDirection.Bottom || _currentResizeDirection == ResizeDirection.BottomLeft || _currentResizeDirection == ResizeDirection.BottomRight) newRect.yMax = _resizeDragStartWindowRect.yMax + delta.y;
 
-                // Enforce min width/height (same logic)
+                // Enforce min width/height.
                 if (newRect.width < MinWindowWidth)
                 {
                     if (_currentResizeDirection == ResizeDirection.Left || _currentResizeDirection == ResizeDirection.TopLeft || _currentResizeDirection == ResizeDirection.BottomLeft) newRect.x = newRect.xMax - MinWindowWidth;

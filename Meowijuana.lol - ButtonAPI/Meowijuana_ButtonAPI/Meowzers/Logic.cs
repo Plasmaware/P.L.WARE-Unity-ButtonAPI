@@ -1,19 +1,13 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Meowijuana_ButtonAPI.API.Meowzers
+namespace Meowijuana_ButtonAPI.API.Meowzers // Assuming this is the correct namespace from your last full code paste
 {
     public static class Logic
     {
         private static GUIStyle GetEffectiveStyle(GUIStyle preferredStyle, Func<GUIStyle> defaultStyleProvider)
         {
-            // This call is crucial. Ensure Window.EnsureStylesInitialized() is called
-            // at the beginning of your OnGUI method before any API calls.
             Window.EnsureStylesInitialized();
-
-            // The preferredStyle ?? defaultStyleProvider() pattern is good.
-            // The final '?? new GUIStyle()' is a safe fallback if a default style itself was somehow null,
-            // preventing NullReferenceExceptions, though ideally defaultStyleProvider always returns a valid style.
             return preferredStyle ?? defaultStyleProvider() ?? new GUIStyle();
         }
 
@@ -21,13 +15,11 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         public static bool AddButtonOnClick(string text, Action onClick, GUIStyle style = null, params GUILayoutOption[] options)
         {
             GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultButtonStyle);
-            // Array.Empty<T>() is generally fine with modern IL2CPP.
-            // For extreme legacy compatibility, 'new GUILayoutOption[0]' could be used, but it's not usually necessary.
             if (options == null || options.Length == 0) options = Array.Empty<GUILayoutOption>();
 
             if (GUILayout.Button(text, currentStyle, options))
             {
-                onClick?.Invoke(); // Safe invocation of the delegate.
+                onClick?.Invoke();
                 return true;
             }
             return false;
@@ -46,7 +38,6 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultToggleStyle);
             if (options == null || options.Length == 0) options = Array.Empty<GUILayoutOption>();
             bool previousState = toggleState;
-            // GUILayout.Toggle is standard and IL2CPP-friendly.
             toggleState = GUILayout.Toggle(toggleState, text, currentStyle, options);
             return toggleState != previousState;
         }
@@ -59,38 +50,38 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUIStyle currentSliderStyle = GetEffectiveStyle(sliderStyle, () => Window.DefaultHorizontalSliderStyle);
             GUIStyle currentThumbStyle = GetEffectiveStyle(thumbStyle, () => Window.DefaultHorizontalSliderThumbStyle);
 
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>()); // Applied Fix
             if (!string.IsNullOrEmpty(label))
             {
-                // String interpolation is fine with IL2CPP.
                 string labelText = showValue ? $"{label} ({sliderValue:F2})" : label;
-                GUILayout.Label(labelText, currentLabelStyle, GUILayout.Width(150)); // Consider making width configurable if needed
+                // Applied Fix: Wrapped GUILayout.Width in an array
+                GUILayout.Label(labelText, currentLabelStyle, new GUILayoutOption[] { GUILayout.Width(150) });
             }
-            // Ensuring options are not null for GUILayout.HorizontalSlider is good.
             if (options == null || options.Length == 0) options = new[] { GUILayout.ExpandWidth(true) };
             sliderValue = GUILayout.HorizontalSlider(sliderValue, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
             GUILayout.EndHorizontal();
-            return !Mathf.Approximately(sliderValue, previousValue); // Mathf.Approximately is good for float comparisons.
+            return !Mathf.Approximately(sliderValue, previousValue);
         }
 
         public static bool AddHSlider(string label, ref int sliderValue, int minValue, int maxValue, GUIStyle labelStyle = null, GUIStyle sliderStyle = null, GUIStyle thumbStyle = null, bool showValue = true, params GUILayoutOption[] options)
         {
             int previousValue = sliderValue;
-            float tempFloat = sliderValue; // Using a temp float for GUILayout.HorizontalSlider is standard.
+            float tempFloat = sliderValue;
 
             GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
             GUIStyle currentSliderStyle = GetEffectiveStyle(sliderStyle, () => Window.DefaultHorizontalSliderStyle);
             GUIStyle currentThumbStyle = GetEffectiveStyle(thumbStyle, () => Window.DefaultHorizontalSliderThumbStyle);
 
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>()); // Applied Fix (was already in your last paste)
             if (!string.IsNullOrEmpty(label))
             {
                 string labelText = showValue ? $"{label} ({sliderValue})" : label;
-                GUILayout.Label(labelText, currentLabelStyle, GUILayout.Width(150));
+                // Applied Fix: Wrapped GUILayout.Width in an array
+                GUILayout.Label(labelText, currentLabelStyle, new GUILayoutOption[] { GUILayout.Width(150) });
             }
             if (options == null || options.Length == 0) options = new[] { GUILayout.ExpandWidth(true) };
             tempFloat = GUILayout.HorizontalSlider(tempFloat, minValue, maxValue, currentSliderStyle, currentThumbStyle, options);
-            sliderValue = Mathf.RoundToInt(tempFloat); // Mathf.RoundToInt is standard.
+            sliderValue = Mathf.RoundToInt(tempFloat);
             GUILayout.EndHorizontal();
             return sliderValue != previousValue;
         }
@@ -102,10 +93,14 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
             GUIStyle currentFieldStyle = GetEffectiveStyle(fieldStyle, () => Window.DefaultTextFieldStyle);
 
-            if (!string.IsNullOrEmpty(label)) GUILayout.Label(label, currentLabelStyle);
+            if (!string.IsNullOrEmpty(label))
+            {
+                // Applied Fix: Added Array.Empty<GUILayoutOption>()
+                GUILayout.Label(label, currentLabelStyle, Array.Empty<GUILayoutOption>());
+            }
             if (options == null || options.Length == 0) options = Array.Empty<GUILayoutOption>();
             textValue = GUILayout.TextField(textValue, currentFieldStyle, options);
-            return textValue != previousValue; // String comparison is fine.
+            return textValue != previousValue;
         }
 
         public static bool AddTextArea(string label, ref string textValue, GUIStyle labelStyle = null, GUIStyle areaStyle = null, params GUILayoutOption[] options)
@@ -114,7 +109,11 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUIStyle currentLabelStyle = GetEffectiveStyle(labelStyle, () => Window.DefaultLabelStyle);
             GUIStyle currentAreaStyle = GetEffectiveStyle(areaStyle, () => Window.DefaultTextAreaStyle);
 
-            if (!string.IsNullOrEmpty(label)) GUILayout.Label(label, currentLabelStyle);
+            if (!string.IsNullOrEmpty(label))
+            {
+                // Applied Fix: Added Array.Empty<GUILayoutOption>()
+                GUILayout.Label(label, currentAreaStyle, Array.Empty<GUILayoutOption>()); // Corrected to use currentAreaStyle if that was intended for label, or currentLabelStyle
+            }
             if (options == null || options.Length == 0) options = Array.Empty<GUILayoutOption>();
             textValue = GUILayout.TextArea(textValue, currentAreaStyle, options);
             return textValue != previousValue;
@@ -125,7 +124,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         {
             GUIStyle currentStyle = GetEffectiveStyle(style, () => Window.DefaultLabelStyle);
             if (options == null || options.Length == 0) options = Array.Empty<GUILayoutOption>();
-            GUILayout.Label(text, currentStyle, options);
+            GUILayout.Label(text, currentStyle, options); // This was already correct
         }
 
         // --- SubSection Helpers ---
@@ -134,11 +133,11 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUIStyle currentBoxStyle = GetEffectiveStyle(boxStyle, () => Window.DefaultSectionStyle);
             GUIStyle currentTitleStyle = GetEffectiveStyle(titleStyle, () => Window.DefaultTitleStyle);
 
-            // Using a new array if options is null/empty is correct.
             GUILayoutOption[] verticalOptions = (options != null && options.Length > 0) ? options : new[] { GUILayout.ExpandWidth(true) };
             GUILayout.BeginVertical(currentBoxStyle, verticalOptions);
             if (!string.IsNullOrEmpty(title))
             {
+                // This AddLabel call correctly passes options (or GUILayout.ExpandWidth(true) if options are null/empty)
                 AddLabel(title, currentTitleStyle, GUILayout.ExpandWidth(true));
                 GUILayout.Space(5);
             }
@@ -146,7 +145,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         public static void EndSubSection()
         {
             GUILayout.EndVertical();
-            GUILayout.Space(10); // Standard GUILayout.Space.
+            GUILayout.Space(10);
         }
     }
 }

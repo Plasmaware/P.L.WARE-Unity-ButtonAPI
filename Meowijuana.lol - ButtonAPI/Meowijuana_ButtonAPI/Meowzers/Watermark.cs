@@ -1,7 +1,8 @@
-﻿// Watermark.cs
-using System;
+﻿using System;
 using System.Globalization;
+using Meowijuana_ButtonAPI.Meowzers.Image_System;
 using UnityEngine;
+// For CultureInfo.InvariantCulture
 
 namespace Meowijuana_ButtonAPI.API.Meowzers
 {
@@ -19,7 +20,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         private int _fontSize = 12;
         public int FontSize { get => _fontSize; set { if (_fontSize != value) { _fontSize = value; _stylesNeedUpdate = true; } } }
         private FontStyle _fontStyle = FontStyle.Normal;
-        public FontStyle FontStyleMember { get => _fontStyle; set { if (_fontStyle != value) { _fontStyle = value; _stylesNeedUpdate = true; } } } // Renamed to avoid conflict
+        public FontStyle FontStyleMember { get => _fontStyle; set { if (_fontStyle != value) { _fontStyle = value; _stylesNeedUpdate = true; } } } // Renamed to avoid conflict with type name
 
         public TextAnchor Alignment { get; set; } = TextAnchor.UpperRight;
         public float Padding { get; set; } = 10f;
@@ -27,7 +28,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
         private GUIStyle _watermarkStyle;
         private GUIStyle _backgroundStyle;
-        private Texture2D _backgroundTexture;
+        private Texture2D _backgroundTexture; // UnityEngine.Object, needs careful handling
 
         private bool _stylesNeedUpdate = true;
         private bool _disposed = false;
@@ -47,19 +48,21 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             if (!_stylesNeedUpdate && _watermarkStyle != null && _backgroundStyle != null) return;
 
             if (_watermarkStyle == null)
-                _watermarkStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
+                _watermarkStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft }; // Standard practice
 
             _watermarkStyle.fontSize = FontSize;
-            _watermarkStyle.fontStyle = FontStyleMember;
+            _watermarkStyle.fontStyle = FontStyleMember; // Property renamed to FontStyleMember
             _watermarkStyle.normal.textColor = TextColor;
 
             if (_backgroundStyle == null)
                 _backgroundStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(0, 0, 0, 0) };
 
             // Only recreate texture if color changed or texture doesn't exist
-            if (_backgroundTexture == null || _backgroundTexture.GetPixel(0, 0) != BackgroundColor) // Crude check, assumes 1x1
+            // IL2CPP: Texture2D creation and modification is standard.
+            // HideFlags.HideAndDontSave is crucial for runtime textures.
+            if (_backgroundTexture == null || _backgroundTexture.GetPixel(0, 0) != BackgroundColor) // Crude check, assumes 1x1. For more complex scenarios, store last set color.
             {
-                if (_backgroundTexture != null) UnityEngine.Object.Destroy(_backgroundTexture);
+                if (_backgroundTexture != null) UnityEngine.Object.Destroy(_backgroundTexture); // Correctly destroy old texture
                 _backgroundTexture = new Texture2D(1, 1) { hideFlags = HideFlags.HideAndDontSave };
                 _backgroundTexture.SetPixel(0, 0, BackgroundColor);
                 _backgroundTexture.Apply();
@@ -71,6 +74,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
         private void UpdateFPS()
         {
             _frameCount++;
+            // Time.unscaledTime is appropriate for UI elements like FPS counters.
             if (Time.unscaledTime > _lastFpsUpdateTime + FPS_UPDATE_INTERVAL)
             {
                 _currentFps = _frameCount / (Time.unscaledTime - _lastFpsUpdateTime);
@@ -86,21 +90,26 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             InitializeOrUpdateStyles();
             UpdateFPS();
 
+            // DateTime.ToString can cause some allocation. For an element like a watermark, this is usually acceptable.
+            // CultureInfo.InvariantCulture is good for consistent formatting.
             string timeString = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
             string fpsString = $"FPS: {_currentFps:F0}";
             string watermarkTextString = $"{CheatName} {Version}";
             if (!string.IsNullOrEmpty(UserName)) watermarkTextString += $" | {UserName}";
             watermarkTextString += $" | {timeString} | {fpsString}";
+            // IL2CPP: String concatenations and interpolations are handled. For extreme performance, StringBuilder could be used, but likely overkill here.
 
             GUIContent watermarkTextContent = new GUIContent(watermarkTextString);
-            Vector2 textSize = _watermarkStyle.CalcSize(watermarkTextContent);
+            Vector2 textSize = _watermarkStyle.CalcSize(watermarkTextContent); // Standard GUI method.
 
             Texture2D currentGifFrame = null;
             float gifWidth = 0f, gifHeight = 0f;
             bool gifIsPresent = false, gifIsActuallyLoading = false;
 
-            try // Safe access to GifLoader
+            try // Safe access to GifLoader. IL2CPP: try-catch has some overhead but is fine for non-critical paths or error handling.
             {
+                // Assuming GifLoader is an external component. Its IL2CPP compatibility is separate.
+                // This code interacts with it defensively.
                 gifIsActuallyLoading = GifLoader.IsLoading;
                 if (GifLoader.IsLoaded && GifLoader.IsPlaying)
                 {
@@ -112,6 +121,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
                     }
                 }
             }
+            // It's good practice to catch specific exceptions if possible, rather than generic System.Exception.
             catch (Exception ex) { Debug.LogWarning($"[Watermark] GifLoader access error: {ex.Message}"); }
 
 
@@ -128,7 +138,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             if (gifIsPresent)
             {
                 totalContentWidth = gifWidth + SpaceBetweenGifAndText + textSize.x;
-                totalContentHeight = Mathf.Max(gifHeight, textSize.y);
+                totalContentHeight = Mathf.Max(gifHeight, textSize.y); // Mathf.Max is IL2CPP-friendly.
             }
             else if (gifIsActuallyLoading)
             {
@@ -138,13 +148,12 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
 
             float boxWidth = totalContentWidth + Padding * 2;
             float boxHeight = totalContentHeight + Padding * 2;
-            Rect mainRect = new Rect(0, 0, boxWidth, boxHeight);
+            Rect mainRect = new Rect(0, 0, boxWidth, boxHeight); // Rect is a struct, efficient.
 
-            // Alignment (same as your original logic)
+            // Alignment logic using Screen.width/height is standard.
             switch (Alignment)
             {
                 case TextAnchor.UpperLeft: mainRect.x = Padding; mainRect.y = Padding; break;
-                // ... (all other cases from your original code) ...
                 case TextAnchor.UpperCenter: mainRect.x = (Screen.width - boxWidth) / 2f; mainRect.y = Padding; break;
                 case TextAnchor.UpperRight: mainRect.x = Screen.width - boxWidth - Padding; mainRect.y = Padding; break;
                 case TextAnchor.MiddleLeft: mainRect.x = Padding; mainRect.y = (Screen.height - boxHeight) / 2f; break;
@@ -155,7 +164,7 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
                 case TextAnchor.LowerRight: mainRect.x = Screen.width - boxWidth - Padding; mainRect.y = Screen.height - boxHeight - Padding; break;
             }
 
-            GUI.Box(mainRect, GUIContent.none, _backgroundStyle);
+            GUI.Box(mainRect, GUIContent.none, _backgroundStyle); // Standard GUI calls.
 
             float currentX = mainRect.x + Padding;
             float contentAreaY = mainRect.y + Padding;
@@ -177,10 +186,11 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             GUI.Label(textRect, watermarkTextContent, _watermarkStyle);
         }
 
+        // Proper IDisposable implementation for cleaning up native resources (Texture2D)
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this); // Prevents finalizer from running if Dispose is called.
         }
 
         protected virtual void Dispose(bool disposing)
@@ -188,14 +198,25 @@ namespace Meowijuana_ButtonAPI.API.Meowzers
             if (_disposed) return;
             if (disposing)
             {
-                if (_backgroundTexture != null)
-                {
-                    UnityEngine.Object.Destroy(_backgroundTexture);
-                    _backgroundTexture = null;
-                }
+                // Dispose managed state (managed objects).
+                // (No managed objects that need explicit disposal here besides _backgroundTexture which is a Unity Object)
+            }
+
+            // Free unmanaged resources (unmanaged objects) and override a finalizer below.
+            if (_backgroundTexture != null)
+            {
+                UnityEngine.Object.Destroy(_backgroundTexture); // Crucial for Unity objects
+                _backgroundTexture = null;
             }
             _disposed = true;
         }
-        ~Watermark() { Dispose(false); }
+
+        // Finalizer: Fallback for cleanup if Dispose() isn't called.
+        // IL2CPP: Finalizers work but have performance implications if frequently created/destroyed.
+        // For a long-lived object like a watermark, this is fine.
+        ~Watermark()
+        {
+            Dispose(false);
+        }
     }
 }
